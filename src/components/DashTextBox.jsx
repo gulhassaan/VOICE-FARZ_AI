@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const DashTextBox = () => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
@@ -26,7 +27,10 @@ const DashTextBox = () => {
     if (token) {
       // If token is available, verify it with backend
       axios
-        .post("http://localhost:8000/verify_login/", null, {
+        .post(
+          // "http://localhost:8000/verify_login/",
+          `${baseUrl}/verify_login/`,
+          null, {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Token ${token}`,
@@ -71,7 +75,10 @@ const DashTextBox = () => {
           formData.append("file", audioBlob);
 
           axios
-            .post("http://localhost:8000/transcribe/", formData, {
+            .post(
+              // "http://localhost:8000/transcribe/",
+              `${baseUrl}/transcribe/`,
+               formData, {
               headers: {
                 "Content-Type": "multipart/form-data",
                 Authorization: `Token ${token}`,
@@ -109,7 +116,7 @@ const DashTextBox = () => {
   const handleMicOption = () => {
     if (!recording) {
       setRecordedText("");
-      
+
       setSpeechThread(null);
       setStep(5);
       startRecording();
@@ -129,7 +136,10 @@ const DashTextBox = () => {
 
     // Send formData to backend
     axios
-      .post("http://localhost:8000/transcribe/", formData, {
+      .post(
+        // "http://localhost:8000/transcribe/", 
+        `${baseUrl}/transcribe/`,
+      formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Token ${token}`,
@@ -138,7 +148,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.text);
-        
+
         setSpeechThread(data.SpeechThread_id);
       })
       .catch((error) => {
@@ -161,11 +171,11 @@ const DashTextBox = () => {
     setIsLoading(true);
     axios
       .post(
-        "http://localhost:8000/generate_summary/",
+        // "http://localhost:8000/generate_summary/",
+        `${baseUrl}/generate_summary/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
-
         },
         {
           headers: {
@@ -177,7 +187,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.summary);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setIsSummary(true);
         setIsWhitePaper(false);
@@ -196,7 +206,8 @@ const DashTextBox = () => {
     setIsLoading(true);
     axios
       .post(
-        "http://localhost:8000/generate_whitepaper/",
+        // "http://localhost:8000/generate_whitepaper/",
+        `${baseUrl}/generate_whitepaper/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
@@ -212,7 +223,7 @@ const DashTextBox = () => {
         const { data } = response;
         // setWhitePaperText(data.whitepaper);
         setRecordedText(data.whitepaper);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setIsWhitePaper(true);
         setIsSummary(false);
@@ -232,7 +243,8 @@ const DashTextBox = () => {
     setIsLoading(true);
     axios
       .post(
-        "http://localhost:8000/generate_pdf/",
+        // "http://localhost:8000/generate_pdf/",
+        `${baseUrl}/generate_pdf/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
@@ -264,7 +276,8 @@ const DashTextBox = () => {
     setIsLoading(true); // set loading state to true
     axios
       .post(
-        "http://localhost:8000/generate_blog_post/",
+        // "http://localhost:8000/generate_blog_post/",
+        `${baseUrl}/generate_blog_post/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
@@ -279,7 +292,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.blog_post);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setIsLoading(false); // set loading state to false
         setStep(4); // move to the next step
@@ -295,7 +308,8 @@ const DashTextBox = () => {
     setIsLoading(true); // set loading state to true
     axios
       .post(
-        "http://localhost:8000/generate_instagram_post/",
+        // "http://localhost:8000/generate_instagram_post/",
+        `${baseUrl}/generate_instagram_post/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
@@ -310,7 +324,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.instagram_post);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setIsLoading(false); // set loading state to false
         setStep(4); // move to the next step
@@ -326,7 +340,8 @@ const DashTextBox = () => {
     setIsLoading(true); // set loading state to true
     axios
       .post(
-        "http://localhost:8000/generate_linkedin_post/",
+        // "http://localhost:8000/generate_linkedin_post/",
+        `${baseUrl}/generate_linkedin_post/`,
         {
           text: recordedText,
           SpeechThread_id: speechThread,
@@ -341,7 +356,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.linkedin_post);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setIsLoading(false); // set loading state to false
         setStep(4); // move to the next step
@@ -358,7 +373,8 @@ const DashTextBox = () => {
 
     axios
       .post(
-        "http://localhost:8000/transcribe/",
+        // "http://localhost:8000/transcribe/",
+        `${baseUrl}/transcribe/`,
         { youtube_url: youtubeUrl },
         {
           headers: {
@@ -370,7 +386,7 @@ const DashTextBox = () => {
       .then((response) => {
         const { data } = response;
         setRecordedText(data.text);
-        
+
         setSpeechThread(data.SpeechThread_id);
         setYoutubeUrl("");
         setIsLoading(false); // set loading state to false
@@ -445,54 +461,54 @@ const DashTextBox = () => {
         </>
       ) : step === 2 ? (
         <>
-  <div className="w-full">
-    <h1 className="text-xl sm:text-3xl font-semibold mb-4 text-center text-yellow-600">
-      Transcribed Text
-    </h1>
-    <textarea
-      className="w-full h-3/4 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-base text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 resize-none"
-      rows="10"
-      placeholder="Enter your text here"
-      readOnly={!isEditable}
-      onChange={(e) => setRecordedText(e.target.value)}
-      value={recordedText}
-    ></textarea>
-  </div>
-  <div className="flex space-x-2 sm:space-x-4">
-  <button
-    type="button"
-    className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-700"
-    onClick={() => setIsEditable(!isEditable)}
-  >
-    {isEditable ? "Save" : "Edit"}
-  </button>
-  <button
-    type="button"
-    className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-700"
-    onClick={handleGenerateWhitePaper}
-    disabled={isWhitePaper}
-    hidden={isWhitePaper}
-  >
-    Generate White Paper
-  </button>
-  <button
-    type="button"
-    className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-green-500 text-white rounded-md hover:bg-green-700"
-    onClick={handleGenerateSummary}
-    disabled={isSummary}
-    hidden={isSummary}
-  >
-    Generate Summary
-  </button>
-  <button
-    type="button"
-    className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-purple-500 text-white rounded-md hover:bg-purple-700"
-    onClick={handleRestart}
-  >
-    Restart
-  </button>
-</div>
-</>
+          <div className="w-full">
+            <h1 className="text-xl sm:text-3xl font-semibold mb-4 text-center text-yellow-600">
+              Transcribed Text
+            </h1>
+            <textarea
+              className="w-full h-3/4 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-base text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 resize-none"
+              rows="10"
+              placeholder="Enter your text here"
+              readOnly={!isEditable}
+              onChange={(e) => setRecordedText(e.target.value)}
+              value={recordedText}
+            ></textarea>
+          </div>
+          <div className="flex space-x-2 sm:space-x-4">
+            <button
+              type="button"
+              className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-700"
+              onClick={() => setIsEditable(!isEditable)}
+            >
+              {isEditable ? "Save" : "Edit"}
+            </button>
+            <button
+              type="button"
+              className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-700"
+              onClick={handleGenerateWhitePaper}
+              disabled={isWhitePaper}
+              hidden={isWhitePaper}
+            >
+              Generate White Paper
+            </button>
+            <button
+              type="button"
+              className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-green-500 text-white rounded-md hover:bg-green-700"
+              onClick={handleGenerateSummary}
+              disabled={isSummary}
+              hidden={isSummary}
+            >
+              Generate Summary
+            </button>
+            <button
+              type="button"
+              className="w-24 h-10 sm:w-32 sm:h-12 text-xs sm:text-base bg-purple-500 text-white rounded-md hover:bg-purple-700"
+              onClick={handleRestart}
+            >
+              Restart
+            </button>
+          </div>
+        </>
       ) : step === 3 ? (
         <>
           <div className="w-full">

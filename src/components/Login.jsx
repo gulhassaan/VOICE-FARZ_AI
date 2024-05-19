@@ -6,6 +6,7 @@ import Navbar from './Navbar';
 
 export default function Login() {
   const navigate = useNavigate();
+  const baseUrl= process.env.REACT_APP_BASE_URL;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
@@ -21,7 +22,11 @@ export default function Login() {
     }
     if (token) {
       // If token is available, verify it with backend
-      axios.post("http://localhost:8000/verify_login/",null,
+      axios.post(
+        // "http://localhost:8000/verify_login/",
+        `${baseUrl}/verify_login/`,
+        
+        null,
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -62,7 +67,10 @@ export default function Login() {
       password: password
     };
     try {
-      const response = await axios.post('http://localhost:8000/login/', data, {
+      const response = await axios.post(
+        // 'http://localhost:8000/login/',
+        `${baseUrl}/login/`,
+         data, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }

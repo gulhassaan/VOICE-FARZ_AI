@@ -11,7 +11,9 @@ const Navbar = () => {
 
   useEffect(() => {
     const localToken = localStorage.getItem("token");
+    const baseUrl= process.env.REACT_APP_BASE_URL;
     const sessionToken = sessionStorage.getItem("token");
+    console.log("Base URL: ", baseUrl)
     if (localToken) {
       setToken(localToken);
     } else if (sessionToken) {
@@ -20,7 +22,10 @@ const Navbar = () => {
     if (token) {
       // If token is available, verify it with backend
       axios
-        .post("http://localhost:8000/verify_login/", null, {
+        .post(
+          // "http://localhost:8000/verify_login/",
+          `${baseUrl}/verify_login/`,
+           null, {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Token ${token}`,

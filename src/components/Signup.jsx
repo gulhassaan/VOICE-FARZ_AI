@@ -28,7 +28,9 @@ export default function Signup() {
     formData.append('email', email);
     formData.append('password', password);
     try {
-      const response = await axios.post('http://localhost:8000/signup/',
+      const response = await axios.post(
+        // 'http://localhost:8000/signup/',
+        `${process.env.REACT_APP_BASE_URL}/signup/`,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
