@@ -6,14 +6,13 @@ import DashHistory from './components/DashHistory';
 
 function App() {
   return (
-    <Router basename="/">
+    <Router basename={process.env.PUBLIC_URL || '/'}>
       <div>
         <Routes>
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/history" element={<DashHistory />} />
-
         </Routes>
       </div>
     </Router>

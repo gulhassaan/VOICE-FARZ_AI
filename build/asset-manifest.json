@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/tasif498/SpeechInsight-Frontend/static/css/main.c237c256.css",
-    "main.js": "/tasif498/SpeechInsight-Frontend/static/js/main.5d1ac3a7.js",
-    "static/media/AI.png": "/tasif498/SpeechInsight-Frontend/static/media/AI.908771951c73323702c3.png",
-    "static/media/logo.png": "/tasif498/SpeechInsight-Frontend/static/media/logo.3672430231d10226f902.png",
-    "index.html": "/tasif498/SpeechInsight-Frontend/index.html",
-    "main.c237c256.css.map": "/tasif498/SpeechInsight-Frontend/static/css/main.c237c256.css.map",
-    "main.5d1ac3a7.js.map": "/tasif498/SpeechInsight-Frontend/static/js/main.5d1ac3a7.js.map"
+    "main.css": "/static/css/main.9ed795a6.css",
+    "main.js": "/static/js/main.2ac7920f.js",
+    "static/media/AI.png": "/static/media/AI.908771951c73323702c3.png",
+    "static/media/logo.png": "/static/media/logo.3672430231d10226f902.png",
+    "index.html": "/index.html",
+    "main.9ed795a6.css.map": "/static/css/main.9ed795a6.css.map",
+    "main.2ac7920f.js.map": "/static/js/main.2ac7920f.js.map"
   },
   "entrypoints": [
-    "static/css/main.c237c256.css",
-    "static/js/main.5d1ac3a7.js"
+    "static/css/main.9ed795a6.css",
+    "static/js/main.2ac7920f.js"
   ]
 }
