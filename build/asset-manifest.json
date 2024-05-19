@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/SpeechInsight/static/css/main.c237c256.css",
+    "main.js": "/SpeechInsight/static/js/main.82b810a5.js",
+    "static/media/AI.png": "/SpeechInsight/static/media/AI.908771951c73323702c3.png",
+    "static/media/logo.png": "/SpeechInsight/static/media/logo.3672430231d10226f902.png",
+    "index.html": "/SpeechInsight/index.html",
+    "main.c237c256.css.map": "/SpeechInsight/static/css/main.c237c256.css.map",
+    "main.82b810a5.js.map": "/SpeechInsight/static/js/main.82b810a5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c237c256.css",
+    "static/js/main.82b810a5.js"
+  ]
+}
