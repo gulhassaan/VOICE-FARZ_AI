@@ -1,0 +1,25 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Urbanist;
+}
+
+* {
+    box-sizing: border-box;
+    line-height: normal;
+    font-family: inherit;
+    margin: unset;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+
+input {
+    background-color: transparent;
+    width: 100%;
+}

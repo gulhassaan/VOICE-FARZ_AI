@@ -1,0 +1,145 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: orange;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Custom scrollbar styles */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 12px; /* Width of the entire scrollbar */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the scrollbar track */
+  border-radius: 10px; /* Rounding the corners */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounding the corners */
+  border: 3px solid #f1f1f1; /* Space around the scrollbar thumb */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the scrollbar thumb when hovered */
+}
+
+/*Sidebar*/
+
+.scrollbar-sidebar::-webkit-scrollbar {
+  width: 7px; /* Width of the entire scrollbar */
+}
+
+.scrollbar-sidebar::-webkit-scrollbar-track {
+  background: black; /* Color of the scrollbar track */
+  border-radius: 10px; /* Rounding the corners */
+}
+
+.scrollbar-sidebar::-webkit-scrollbar-thumb {
+  background: orange; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounding the corners */
+  border: 3px solid black; /* Space around the scrollbar thumb */
+}
+
+.scrollbar-sidebar::-webkit-scrollbar-thumb:hover {
+  background: orange; /* Color of the scrollbar thumb when hovered */
+}
+
+/*Children*/
+.scrollbar-Children::-webkit-scrollbar {
+  width: 7px; /* Width of the entire scrollbar */
+}
+
+.scrollbar-Children::-webkit-scrollbar-track {
+  background: white; /* Color of the scrollbar track */
+  border-radius: 10px; /* Rounding the corners */
+}
+
+.scrollbar-Children::-webkit-scrollbar-thumb {
+  background: rgb(177, 177, 177); /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounding the corners */
+  border: 1px solid white; /* Space around the scrollbar thumb */
+}
+
+.scrollbar-Children::-webkit-scrollbar-thumb:hover {
+  background: orange; /* Color of the scrollbar thumb when hovered */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-pulse.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-pulse.delay-400 {
+  animation-delay: 0.4s;
+}
+
+
+
+
