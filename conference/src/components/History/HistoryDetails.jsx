@@ -291,7 +291,7 @@ const HistoryDetails = () => {
         className="text-lg font-semibold mt-2 cursor-pointer"
         onClick={handleDashboardClick}
       >
-        Dashboard &gt; <span className="text-gray-400">Live Recording</span>
+        Dashboard &gt; <span className="text-gray-400">History</span>
       </p>
         </div>
         <div className="relative">
