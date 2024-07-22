@@ -28,9 +28,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
         working-directory: ./conference
-      - name: Fix Vulnerabilities
-        run: npm audit fix --force
-        working-directory: ./conference
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1 # Use the latest stable version
