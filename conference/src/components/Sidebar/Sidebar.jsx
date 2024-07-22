@@ -209,12 +209,17 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="lg:hidden fixed top-0 left-0 w-full z-50 bg-transparent p-4">
+      <div className="lg:hidden fixed top-0 left-0 w-full z-50 bg-transparent p-4 bg-white">
         <button
           onClick={toggleSidebar}
           className="text-black focus:outline-none"
         >
-          <FiMenu className="h-6 w-6" />
+          <FiMenu className="h-6 w-6 inline-block" />
+          <img
+              src={Logo}
+              alt="Farz AI Logo"
+              className="h-8 w-auto cursor-pointer inline-block"
+            />
         </button>
       </div>
 
@@ -410,6 +415,8 @@ const Sidebar = () => {
           </nav>
         </div>
       </div>
+
+     {isOpen &&  <div className="absolute inset-0 bg-slate-900/25 backdrop-blur-sm transition-opacity opacity-100 z-10" onClick={()=>setIsOpen(!isOpen)}> </div>}
     </>
   );
 };

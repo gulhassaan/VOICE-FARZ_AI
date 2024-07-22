@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Registration from './components/Private/Register.jsx';
 import OtpVerification from './components/Secure/OtpVerification.jsx';
@@ -15,8 +15,13 @@ import HistoryDetails from './components/History/HistoryDetails.jsx';
 import Setting from './components/Data/UserProfile.jsx'
 import './index.css';
 
-function App() {
+export const TokenContext = createContext(null);
+
+function App() {    
+    const token = localStorage.getItem("token");
     return (
+       <>
+        <TokenContext.Provider value={token}>
         <Router basename={process.env.PUBLIC_URL || '/'}>
             <Switch>
                 <Route path="/" exact component={Login} />
@@ -65,6 +70,8 @@ function App() {
                 {/** Routing that take Sidebar with itself End*/}
             </Switch>
         </Router>
+        </TokenContext.Provider>
+        </>
     );
 }
 

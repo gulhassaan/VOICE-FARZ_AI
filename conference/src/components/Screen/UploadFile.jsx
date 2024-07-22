@@ -817,7 +817,7 @@ const UploadFile = () => {
                 >
                   1
                 </span>
-                <p className="font-bold text-lg">Upload Files</p>
+                <p className="font-bold text-lg">Upload Audio/Video Files</p>
               </div>
               <FontAwesomeIcon
                 icon={isLiveRecordOpen ? faAngleUp : faAngleDown}

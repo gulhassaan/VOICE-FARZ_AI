@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import { IoMdMoon } from "react-icons/io";
 import { FiSettings, FiLogOut } from "react-icons/fi";
@@ -39,12 +39,15 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { FacebookButton, FacebookCount } from "react-social";
 
+import {TokenContext} from "../../App";
+
 const getEncodedUrl = (content) => encodeURIComponent(content);
 
 const RecordScreen = () => {
+  const token = useContext(TokenContext)
   const history = useHistory();
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire({
         icon: "warning",
@@ -52,7 +55,7 @@ const RecordScreen = () => {
         text: "Please log in again.",
         confirmButtonText: "OK",
       }).then(() => {
-        history.push("/");
+        // history.push("/");
       });
     }
   }, [history]);
@@ -76,6 +79,7 @@ const RecordScreen = () => {
   const [savedGeneratedPosts, setSavedGeneratedPosts] = useState({});
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
+  const uploadedFile = useRef(null);
   const [dummyState, setDummyState] = useState(false);
   const [isEditingGenerated, setIsEditingGenerated] = useState(true); // Enable editing mode by default for generated content
   const [isEditingSavedGenerated, setIsEditingSavedGenerated] = useState(false);
@@ -87,7 +91,7 @@ const RecordScreen = () => {
   const profilePictureInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
   const generatedPostRef = useRef(null);
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
@@ -127,6 +131,7 @@ const RecordScreen = () => {
 
   const handleProfilePictureChange = (event) => {
     const file = event.target.files[0];
+    uploadedFile.current = event.target.files[0];
     if (file) {
       const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
       if (validImageTypes.includes(file.type)) {
@@ -313,7 +318,7 @@ const RecordScreen = () => {
         console.error("Response headers:", error.response.headers);
         Swal.fire(
           "Error",
-          "Transcription failed: " + error.response.data.errors.join(", "),
+          "Transcription failed: " + Array.isArray(error.response.data.errors) ? error.response.data.errors?.join(", ") : error.response.data.error,
           "error"
         );
       }
@@ -542,6 +547,9 @@ const RecordScreen = () => {
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
       markStepAsCompleted(2);
+      setTimeout(() => {
+        document.getElementById(`generateBtn${title}`).click();
+      }, 400);
     } catch (error) {
       console.error("Error in generating content:", error);
       if (error.response) {
@@ -807,6 +815,11 @@ const RecordScreen = () => {
             {profilePictureName}
           </span>
         )}
+       {profilePictureName && 
+       <img
+       alt="not found"
+        src={URL.createObjectURL(uploadedFile.current)}
+     />} 
       </p>
       <input
         type="file"
@@ -1042,6 +1055,7 @@ const RecordScreen = () => {
                         )
                       }
                     >
+                      
                       <div
                         className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 transition-opacity ${
                           generatedStatus[index]
@@ -1049,6 +1063,7 @@ const RecordScreen = () => {
                             : "opacity-0 group-hover:opacity-100"
                         }`}
                       >
+                        <a href={`#${option.title}`} className="px-4 py-2 flex" id={`generateBtn${option.title}`}></a>
                         <button
                           className={`text-white px-4 py-2 rounded-3xl transition-colors duration-300 ${
                             generatedStatus[index]
@@ -1078,9 +1093,10 @@ const RecordScreen = () => {
             </div>
           </div>
 
-          <div className="flex flex-col mt-8">
+         
             {/* <h2 className="text-2xl font-bold mb-4">Generated Post</h2> */}
             {generatedPost && (
+               <div className="flex flex-col mt-8" id={generatedPost.title}>
               <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
                 <div className="flex items-center justify-between mb-4">
                   <p className="font-bold text-lg"> Generated {generatedPost.title}</p>
@@ -1152,8 +1168,8 @@ const RecordScreen = () => {
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+         </div>    )}
+         
         </div>
       </div>
     </div>
