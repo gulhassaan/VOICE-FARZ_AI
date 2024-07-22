@@ -51,6 +51,7 @@ const HistoryDetails = () => {
   const [isStep3Open, setIsStep3Open] = useState(true);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const editorInstance = useRef(null);
+  const generatedPostRef = useRef(null);
 
   const fetchHistoryDetails = async () => {
     const token = localStorage.getItem("token");
@@ -169,11 +170,37 @@ const HistoryDetails = () => {
         });
         setIsEditingGenerated(true);
         Swal.close();
+
+        // Automatically open the next step
+        if (type === "summary") {
+          setIsStep1Open(false);
+          setIsStep2Open(true);
+        } else if (type === "ebook") {
+          setIsStep2Open(false);
+          setIsStep3Open(true);
+        }
+
+        // Scroll to the generated post
+        scrollToGeneratedPost();
       }
     } catch (error) {
       console.error("Error generating content:", error);
       Swal.fire("Error", `Failed to generate ${title}. ${error.response ? error.response.data : "Please try again later."}`, "error");
     }
+  };
+
+  useEffect(() => {
+    if (generatedPost) {
+      scrollToGeneratedPost();
+    }
+  }, [generatedPost]);
+
+  const scrollToGeneratedPost = () => {
+    setTimeout(() => {
+      if (generatedPostRef.current) {
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
   };
 
   const handleCopyContent = (content) => {
@@ -279,20 +306,22 @@ const HistoryDetails = () => {
     { title: "Twitter", type: "twitter_post", image: Twitter },
     { title: "LinkedIn", type: "linkedin_post", image: LinkedIn },
   ];
+
   const handleDashboardClick = () => {
     history.push("/dashboard");
   };
+
   return (
     <div className="container mx-auto px-0">
       <div className="flex mt-4 flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
         <div className="flex items-center mb-4 md:mb-0">
           {/* <h1 className="lg:text-2xl text-sm font-bold">{Username}👋</h1> */}
           <p
-        className="text-lg font-semibold mt-2 cursor-pointer"
-        onClick={handleDashboardClick}
-      >
-        Dashboard &gt; <span className="text-gray-400">History</span>
-      </p>
+            className="text-lg font-semibold mt-2 cursor-pointer"
+            onClick={handleDashboardClick}
+          >
+            Dashboard &gt; <span className="text-gray-400">History</span>
+          </p>
         </div>
         <div className="relative">
           <button
@@ -472,9 +501,9 @@ const HistoryDetails = () => {
           </div>
 
           {generatedPost && (
-            <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
+            <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl" ref={generatedPostRef}>
               <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated </p>
+                <p className="font-bold text-lg">Generated {generatedPost.title}</p>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleCopyContent(generatedPost.content)}
@@ -516,12 +545,19 @@ const HistoryDetails = () => {
                   />
                 )}
                 <div className="flex justify-center mt-4">
-                  {isEditingGenerated && (
+                  {isEditingGenerated ? (
                     <button
                       onClick={handleSaveGeneratedText}
                       className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                     >
                       Save
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditingGenerated(true)}
+                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                    >
+                      Edit
                     </button>
                   )}
                 </div>

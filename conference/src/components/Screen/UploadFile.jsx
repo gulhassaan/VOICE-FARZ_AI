@@ -87,7 +87,15 @@ const UploadFile = () => {
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
   const token = localStorage.getItem("token");
-
+  const generatedPostRef = useRef(null);
+  const scrollToGeneratedPost = () => {
+    setTimeout(() => {
+      if (generatedPostRef.current) {
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  };
+  
   let editorInstance = useRef(null);
 
   useEffect(() => {

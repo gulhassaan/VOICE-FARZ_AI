@@ -67,7 +67,15 @@ const YoutubeLink = () => {
   const inputRef = useRef(null);
   const token = localStorage.getItem("token");
   const editorInstance = useRef(null);
-
+  const generatedPostRef = useRef(null);
+  const scrollToGeneratedPost = () => {
+    setTimeout(() => {
+      if (generatedPostRef.current) {
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  };
+  
   const [currentTitle, setCurrentTitle] = useState(""); // Added state for currentTitle
 
   useEffect(() => {
