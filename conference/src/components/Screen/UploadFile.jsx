@@ -27,7 +27,7 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
-import WhitePaper from "../../Assets/images/whitepaper1.png";
+import MeetingNotes from "../../Assets/images/whitepaper.png";
 import Facebook from "../../Assets/images/facebook1.png";
 import Twitter from "../../Assets/images/twitter1.png";
 import LinkedIn from "../../Assets/images/linkedin1.png";
@@ -36,7 +36,8 @@ import FileIcon from "../../Assets/images/music-icon.png";
 import "../../App.css";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
-import { FacebookButton, FacebookCount } from "react-social";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const getEncodedUrl = (content) => encodeURIComponent(content);
 
@@ -160,15 +161,33 @@ const UploadFile = () => {
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
-
   const handleEditToggleGenerated = () => {
     setIsEditingGenerated(!isEditingGenerated);
+    if (isEditingGenerated && editorInstance.current) {
+      const editedContent = editorInstance.current.getData();
+      setGeneratedContent(editedContent);
+      setSavedGeneratedPosts((prev) => ({
+        ...prev,
+        [generatedPost.title]: editedContent,
+      }));
+      setGeneratedPost({ ...generatedPost, content: editedContent });
+    }
   };
 
+
   const handleSaveText = () => {
+    if (editorInstance.current) {
+      const editedContent = editorInstance.current.getData();
+      setGeneratedContent(editedContent);
+      setSavedGeneratedPosts((prev) => ({
+        ...prev,
+        [generatedContent.title]: editedContent,
+      }));
+    }
     setIsEditing(false);
     markStepAsCompleted(1);
-    
+    setIsTranscriptOpen(!isTranscriptOpen);
+
   };
 
   const handleSaveGeneratedText = () => {
@@ -250,7 +269,7 @@ const UploadFile = () => {
 
       const customHeader = `
         <div class="flex justify-between items-center w-full">
-          <div class="text-lg">Transcribing</div>
+          <div class="text-lg">Processing Audio/video File</div>
           <button id="close-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -312,6 +331,8 @@ const UploadFile = () => {
         );
       }
     }
+    setIsLiveRecordOpen(!isLiveRecordOpen);
+
   };
 
   const handleDashboardClick = () => {
@@ -424,7 +445,7 @@ const UploadFile = () => {
       );
       return;
     }
-    const isHtmlContent = ["Summary", "eBook", "Blog", "White Paper"].includes(
+    const isHtmlContent = ["Summary", "eBook", "Blog", "Meeting Notes"].includes(
       title
     );
 
@@ -498,9 +519,9 @@ const UploadFile = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        eBook: "ebook",
+        "Meeting Notes": "meeting_notes", 
         Blog: "blog_post",
-        "White Paper": "whitepaper",
+        eBook: "ebook",
         Facebook: "facebook_post",
         Twitter: "twitter_post",
         LinkedIn: "linkedin_post",
@@ -554,11 +575,12 @@ const UploadFile = () => {
       navigator.clipboard
         .writeText(content)
         .then(() => {
-          Swal.fire(
-            "Copied!",
-            "The content has been copied to clipboard.",
-            "success"
-          );
+        // Success toast for copied content
+toast.success("Copied! The content has been copied to clipboard.", {
+  position: "top-right", // Position can be adjusted as needed
+  autoClose: 5000,       // Auto close after 5 seconds
+});
+
         })
         .catch((err) => {
           console.error("Failed to copy: ", err);
@@ -572,7 +594,12 @@ const UploadFile = () => {
     navigator.clipboard
       .writeText(stripHtmlTags(content))
       .then(() => {
-        Swal.fire("Copied!", "The content has been copied to clipboard.", "success");
+       // Success toast for copied content
+toast.success("Copied! The content has been copied to clipboard.", {
+  position: "top-right", // Position can be adjusted as needed
+  autoClose: 5000,       // Auto close after 5 seconds
+});
+
       })
       .catch((err) => {
         console.error("Failed to copy:", err);
@@ -647,10 +674,10 @@ const UploadFile = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "eBook",
-      description: "Turn your content into a detailed eBook.",
-      image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      title: "Meeting Notes",
+      description: "Generate concise and informative meeting notes.",
+      image: MeetingNotes,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
@@ -661,10 +688,10 @@ const UploadFile = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "White Paper",
-      description: "Generate an informative white paper.",
-      image: WhitePaper,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_whitepaper/",
+      title: "eBook",
+      description: "Turn your content into a detailed eBook.",
+      image: eBook,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
@@ -920,32 +947,22 @@ const UploadFile = () => {
                     {transcript}
                   </div>
                 )}
-                {isEditing && (
-                  <div className="flex justify-center">
+                <div className="flex justify-center">
+                  {isEditing ? (
                     <button
                       onClick={handleSaveText}
                       className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                     >
                       Save
                     </button>
-                  </div>
-                )}
-                <div className="flex flex-row space-x-2 mt-2">
-                  <button
-                    onClick={handleEditToggle}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon
-                      icon={faPenToSquare}
-                      className="text-white"
-                    />
-                  </button>
-                  <button
-                    onClick={handleCopyTranscriptContent}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faCopy} className="text-white" />
-                  </button>
+                  ) : (
+                    <button
+                      onClick={handleEditToggle}
+                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -1026,70 +1043,101 @@ const UploadFile = () => {
           </div>
         </div>
   
+        
         <div className="flex flex-col mt-8">
-          {/* <h2 className="text-2xl font-bold mb-4">Generated Post</h2> */}
-          {generatedPost && (
-            <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
-              <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated {generatedPost.title} </p>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleCopyContent(generatedPost.content)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faCopy} className="text-white" />
-                  </button>
-                  <button
-                    onClick={() => handleDownloadTextContent(generatedPost.title, generatedPost.content)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faDownload} className="text-white" />
-                  </button>
-                  <button
-                    onClick={() => handleShareContent(generatedPost.title, generatedPost.content)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faShareAlt} className="text-white" />
-                  </button>
+            {/* <h2 className="text-2xl font-bold mb-4">Generated Post</h2> */}
+            {generatedPost && (
+              <div
+                className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
+                id={generatedPost.title}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <p className="font-bold text-lg">
+                    Generated {generatedPost.title}{" "}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleCopyContent(generatedPost.content)}
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    >
+                      <FontAwesomeIcon icon={faCopy} className="text-white" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleDownloadTextContent(
+                          generatedPost.title,
+                          generatedPost.content
+                        )
+                      }
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    >
+                      <FontAwesomeIcon
+                        icon={faDownload}
+                        className="text-white"
+                      />
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleShareContent(
+                          generatedPost.title,
+                          generatedPost.content
+                        )
+                      }
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    >
+                      <FontAwesomeIcon
+                        icon={faShareAlt}
+                        className="text-white"
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="p-4 rounded-lg overflow-auto text-sm">
-                {isEditingGenerated ? (
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={generatedPost.content}
-                    onReady={(editor) => {
-                      editorInstance.current = editor;
-                    }}
-                    onChange={(event, editor) => {
-                      const data = editor.getData();
-                      setGeneratedPost({ ...generatedPost, content: data });
-                    }}
-                  />
-                ) : (
-                  generatedPost.isHtmlContent ? (
+                <div className="p-4 rounded-lg overflow-auto text-sm">
+                  {isEditingGenerated ? (
+                    <CKEditor
+                      editor={ClassicEditor}
+                      data={generatedPost.content}
+                      onReady={(editor) => {
+                        editorInstance.current = editor;
+                      }}
+                      onChange={(event, editor) => {
+                        const data = editor.getData();
+                        setGeneratedPost({ ...generatedPost, content: data });
+                      }}
+                    />
+                  ) : generatedPost.isHtmlContent ? (
                     <div
                       className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: generatedPost.content }}
+                      dangerouslySetInnerHTML={{
+                        __html: generatedPost.content,
+                      }}
                     />
                   ) : (
-                    <div className="whitespace-pre-wrap">{stripHtmlTags(generatedPost.content)}</div>
-                  )
-                )}
-                <div className="flex justify-center mt-4">
-                  {isEditingGenerated && (
-                    <button
-                      onClick={handleSaveGeneratedText}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Save
-                    </button>
+                    <div className="whitespace-pre-wrap">
+                      {stripHtmlTags(generatedPost.content)}
+                    </div>
                   )}
+                  <div className="flex justify-center mt-4">
+                    {isEditingGenerated ? (
+                      <button
+                        onClick={handleSaveGeneratedText}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Save
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggleGenerated}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
       </div>
     </div>
   </div>
@@ -1097,3 +1145,4 @@ const UploadFile = () => {
 };
 
 export default UploadFile;
+

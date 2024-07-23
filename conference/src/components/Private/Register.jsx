@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useHistory, NavLink, useLocation } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Logo from '../../Assets/images/logo.png';
 import Google from '../../Assets/images/google.png';
 import Apple from '../../Assets/images/apple.png';
-
-const MySwal = withReactContent(Swal);
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -44,27 +42,15 @@ const Register = () => {
         const specialChar = /[!@#$%^&*(),.?":{}|<>]/;
 
         if (!minLength.test(password)) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Password Error',
-                text: 'Password must be at least 8 characters long',
-            });
+            toast.error('Password must be at least 8 characters long');
             return false;
         }
         if (!uppercase.test(password)) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Password Error',
-                text: 'Password must contain at least one uppercase letter',
-            });
+            toast.error('Password must contain at least one uppercase letter');
             return false;
         }
         if (!specialChar.test(password)) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Password Error',
-                text: 'Password must contain at least one special character',
-            });
+            toast.error('Password must contain at least one special character');
             return false;
         }
         return true;
@@ -75,11 +61,7 @@ const Register = () => {
 
         // Form validation
         if (formData.username === formData.password) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'Username and password cannot be the same',
-            });
+            toast.error('Username and password cannot be the same');
             return; // Exit the function if validation fails
         }
 
@@ -87,11 +69,7 @@ const Register = () => {
             return;
         }
         if (formData.password !== formData.confirmPassword) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Password Error',
-                text: 'Passwords do not match',
-            });
+            toast.error('Passwords do not match');
             return;
         }
         try {
@@ -106,21 +84,13 @@ const Register = () => {
                     'X-CSRFToken': 'Wdz2FF7IfhClKygAS1kqxaIVJJaxnHTwMM4SagZWTRlRqxbBucWvPvEiY8qY4IBQ'
                 }
             });
-            MySwal.fire({
-                icon: 'success',
-                title: 'Signup Successful',
-                text: 'Signup successful! Redirecting to OTP verification...',
-            });
+            toast.success('Signup successful! Redirecting to OTP verification...');
             setTimeout(() => {
                 history.push('/otp-verification', { email: formData.email }); 
             }, 2000); 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);
-            MySwal.fire({
-                icon: 'error',
-                title: 'Signup Error',
-                text: error.response?.data?.error || 'An error occurred',
-            });
+            toast.error(error.response?.data?.error || 'An error occurred');
         }
     };
 
@@ -159,14 +129,7 @@ const Register = () => {
                 localStorage.setItem('Email', user_info.email);
                 localStorage.setItem('GoogleProfileURL', user_info.google_picture_url);
                 localStorage.setItem("token", token);
-                MySwal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Redirecting to dashboard...',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    timerProgressBar: true
-                });
+                toast.success('Login successful! Redirecting to dashboard...');
                 setLoader(false);
                 history.push('/dashboard');
             } catch (err) {
@@ -179,26 +142,25 @@ const Register = () => {
     };
 
     const showPasswordRequirements = () => {
-        MySwal.fire({
-            icon: 'info',
-            title: 'Password Requirements',
-            html: (
-                <div>
-                    <ul className="list-disc list-inside">
-                        <li>Min 8 characters</li>
-                        <li>1 uppercase letter</li>
-                        <li>1 special character</li>
-                    </ul>
-                </div>
-            ),
-            position: 'top-end',
-            toast: true,
-            showConfirmButton: false,
-            timer: 5000,
-            timerProgressBar: true,
-        });
+        toast.info(
+            <div>
+                <ul className="list-disc list-inside">
+                    <li>Min 8 characters</li>
+                    <li>1 uppercase letter</li>
+                    <li>1 special character</li>
+                </ul>
+            </div>,
+            {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            }
+        );
     };
-    
 
     useEffect(() => {
         getGoogleLink();
@@ -215,6 +177,7 @@ const Register = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-white">
+            <ToastContainer />
             <div className="w-full max-w-xl p-8 space-y-1 bg-white">
                 <div className="flex justify-center mb-4">
                     <img src={Logo} alt="Farz AI Logo" className="h-16" />

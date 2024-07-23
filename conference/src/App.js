@@ -14,13 +14,15 @@ import YouTubeLink from './components/Screen/YoutubeLink.jsx';
 import HistoryDetails from './components/History/HistoryDetails.jsx';
 import Setting from './components/Data/UserProfile.jsx'
 import './index.css';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export const TokenContext = createContext(null);
 
 function App() {    
     const token = localStorage.getItem("token");
     return (
        <>
+           <ToastContainer />
         <TokenContext.Provider value={token}>
         <Router basename={process.env.PUBLIC_URL || '/'}>
             <Switch>

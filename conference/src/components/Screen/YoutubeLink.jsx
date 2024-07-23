@@ -23,7 +23,7 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
-import WhitePaper from "../../Assets/images/whitepaper1.png";
+import MeetingNotes from "../../Assets/images/whitepaper.png";
 import Facebook from "../../Assets/images/facebook1.png";
 import Twitter from "../../Assets/images/twitter1.png";
 import LinkedIn from "../../Assets/images/linkedin1.png";
@@ -31,19 +31,20 @@ import Instagram from "../../Assets/images/instagram1.png";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import "../../App.css";
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const YoutubeLink = () => {
   const history = useHistory();
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Session Expired',
-        text: 'Please log in again.',
-        confirmButtonText: 'OK'
+        icon: "warning",
+        title: "Session Expired",
+        text: "Please log in again.",
+        confirmButtonText: "OK",
       }).then(() => {
-        history.push('/');
+        history.push("/");
       });
     }
   }, [history]);
@@ -75,7 +76,7 @@ const YoutubeLink = () => {
       }
     }, 100);
   };
-  
+
   const [currentTitle, setCurrentTitle] = useState(""); // Added state for currentTitle
 
   useEffect(() => {
@@ -111,7 +112,7 @@ const YoutubeLink = () => {
   const handleProfilePictureChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
       if (validImageTypes.includes(file.type)) {
         setProfilePictureName(file.name); // Set the file name
         const formData = new FormData();
@@ -142,11 +143,9 @@ const YoutubeLink = () => {
   };
 
   const handleSaveText = () => {
-    if (editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
-      setTranscript(editedContent);
-    }
     setIsEditing(false);
+    setIsTranscriptOpen(!isTranscriptOpen);
+
   };
 
   const handleYouTubeLinkChange = (index, event) => {
@@ -204,7 +203,7 @@ const YoutubeLink = () => {
 
       const customHeader = `
         <div class="flex justify-between items-center w-full">
-          <div class="text-lg">Transcribing...</div>
+          <div class="text-lg">Processing Youtube link</div>
           <button id="close-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -265,25 +264,32 @@ const YoutubeLink = () => {
         );
       }
     }
+    setIsYouTubeLinkOpen(!isYouTubeLinkOpen)
   };
 
   const handleCopyNewlyGeneratedContent = () => {
-    let contentElement = document.querySelector("#editor-container .ck-editor__main .ck-content");
+    let contentElement = document.querySelector(
+      "#editor-container .ck-editor__main .ck-content"
+    );
 
     if (!contentElement && editorInstance.current) {
       contentElement = editorInstance.current.ui.view.editable.element;
     }
 
     if (contentElement) {
-      const content = contentElement.innerText || contentElement.textContent || contentElement.innerHTML;
+      const content =
+        contentElement.innerText ||
+        contentElement.textContent ||
+        contentElement.innerHTML;
       navigator.clipboard
         .writeText(content)
         .then(() => {
-          Swal.fire(
-            "Copied!",
-            "The content has been copied to clipboard.",
-            "success"
-          );
+          toast.success("Copied! The content has been copied to clipboard.", {
+            position: "top-right", 
+            autoClose: 5000,       
+          });
+          
+
         })
         .catch((err) => {
           console.error("Failed to copy:", err);
@@ -296,19 +302,17 @@ const YoutubeLink = () => {
   const handleCopyTranscriptContent = () => {
     const contentElement = isEditing
       ? document.querySelector("textarea")
-      : document.querySelector(
-          ".transcript-content"
-        );
+      : document.querySelector(".transcript-content");
     if (contentElement) {
       const content = contentElement.value || contentElement.textContent;
       navigator.clipboard
         .writeText(content)
         .then(() => {
-          Swal.fire(
-            "Copied!",
-            "The content has been copied to clipboard.",
-            "success"
+          toast.success("Copied! The content has been copied to clipboard."
+            
           );
+          
+
         })
         .catch((err) => {
           console.error("Failed to copy: ", err);
@@ -404,9 +408,9 @@ const YoutubeLink = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        eBook: "ebook",
+        "Meeting Notes": "meeting_notes",
         Blog: "blog_post",
-        "White Paper": "whitepaper",
+        eBook: "ebook",
         Facebook: "facebook_post",
         Twitter: "twitter_post",
         LinkedIn: "linkedin_post",
@@ -422,7 +426,7 @@ const YoutubeLink = () => {
       const generatedContent = response.data[contentKey];
       setGeneratedContent(generatedContent);
       setCurrentTitle(title);
-      setIsEditing(true); // Enable editing mode by default for generated content
+      setIsEditing(false); // Enable editing mode by default for generated content
 
       setSavedGeneratedPosts((prev) => ({
         ...prev,
@@ -435,7 +439,6 @@ const YoutubeLink = () => {
       markStepAsCompleted(2);
 
       Swal.close(); // Close the Swal alert here after generation is complete
-
     } catch (error) {
       console.error("Error in generating content:", error);
       if (error.response) {
@@ -460,25 +463,27 @@ const YoutubeLink = () => {
   const handleDownloadHtmlContent = (title, content) => {
     const element = document.createElement("div");
     element.innerHTML = content;
-  
+
     document.body.appendChild(element); // Temporarily add to the document
-  
-    html2canvas(element).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      pdf.setFontSize(20);
-      pdf.text(title, 10, 10);
-      pdf.addImage(imgData, "PNG", 0, 20, 210, 0); // Adjust width and height as needed
-      const dynamicTitle = title;
-      const dynamicPostName = content.slice(0, 20).replace(/\s+/g, '_') || 'Post';
-      pdf.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
-      document.body.removeChild(element); // Remove from the document after use
-    }).catch((error) => {
-      console.error("Error generating PDF:", error);
-      document.body.removeChild(element); // Ensure element is removed in case of error
-    });
+
+    html2canvas(element)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF();
+        pdf.setFontSize(20);
+        pdf.text(title, 10, 10);
+        pdf.addImage(imgData, "PNG", 0, 20, 210, 0); // Adjust width and height as needed
+        const dynamicTitle = title;
+        const dynamicPostName =
+          content.slice(0, 20).replace(/\s+/g, "_") || "Post";
+        pdf.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
+        document.body.removeChild(element); // Remove from the document after use
+      })
+      .catch((error) => {
+        console.error("Error generating PDF:", error);
+        document.body.removeChild(element); // Ensure element is removed in case of error
+      });
   };
-  
 
   const handleDownloadTextContent = (title, content) => {
     const doc = new jsPDF();
@@ -491,18 +496,19 @@ const YoutubeLink = () => {
 
     let y = 20;
     textLines.forEach((line) => {
-        if (y > 270) {
-            doc.addPage();
-            y = 20;
-        }
-        doc.text(line, 10, y);
-        y += 10;
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(line, 10, y);
+      y += 10;
     });
 
     const dynamicTitle = title;
-    const dynamicPostName = textContent.slice(0, 20).replace(/\s+/g, "_") || "Post";
+    const dynamicPostName =
+      textContent.slice(0, 20).replace(/\s+/g, "_") || "Post";
     doc.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
-};
+  };
 
   const handleShareContent = (title, content) => {
     const textContent = stripHtmlTags(content);
@@ -532,10 +538,10 @@ const YoutubeLink = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "eBook",
-      description: "Turn your content into a detailed eBook.",
-      image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      title: "Meeting Notes",
+      description: "Generate concise and informative meeting notes.",
+      image: MeetingNotes,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
@@ -546,10 +552,10 @@ const YoutubeLink = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "White Paper",
-      description: "Generate an informative white paper.",
-      image: WhitePaper,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_whitepaper/",
+      title: "eBook",
+      description: "Turn your content into a detailed eBook.",
+      image: eBook,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
@@ -610,9 +616,9 @@ const YoutubeLink = () => {
     localStorage.clear();
     history.push("/");
   };
-  
+
   const stripHtmlTags = (html) => {
-    let doc = new DOMParser().parseFromString(html, 'text/html');
+    let doc = new DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
   };
   const handleDashboardClick = () => {
@@ -625,11 +631,11 @@ const YoutubeLink = () => {
         <div className="flex items-center mb-4 md:mb-0">
           {/* <h1 className="lg:text-2xl text-sm font-bold">{username}👋</h1> */}
           <p
-        className="text-lg font-semibold mt-2 cursor-pointer"
-        onClick={handleDashboardClick}
-      >
-        Dashboard &gt; <span className="text-gray-400">Youtube Link</span>
-      </p>
+            className="text-lg font-semibold mt-2 cursor-pointer"
+            onClick={handleDashboardClick}
+          >
+            Dashboard &gt; <span className="text-gray-400">Youtube Link</span>
+          </p>
         </div>
         <div className="relative">
           <button
@@ -662,7 +668,6 @@ const YoutubeLink = () => {
         </div>
       </div>
 
- 
       <p
         className="text-lg font-semibold my-8 cursor-pointer"
         onClick={() =>
@@ -718,7 +723,9 @@ const YoutubeLink = () => {
               <div className="flex flex-col">
                 <div className="bg-gray-50 border-dashed border-2 border-gray-300 p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
                   <div className="text-center w-full">
-                    <p className="text-gray-400 mb-2">Enter a link to transcribe it into text</p>
+                    <p className="text-gray-400 mb-2">
+                      Enter a link to transcribe it into text
+                    </p>
                     {youtubeLinks.map((link, index) => (
                       <div
                         key={index}
@@ -731,7 +738,7 @@ const YoutubeLink = () => {
                           onChange={(e) => handleYouTubeLinkChange(index, e)}
                           placeholder="Enter YouTube link"
                         />
-                        <div className="flex space-x-3 px-6"> 
+                        <div className="flex space-x-3 px-6">
                           <button
                             className="text-white border p-2 border-[#6A707C] bg-[#6A707C] rounded-full h-10 w-10 flex items-center justify-center"
                             onClick={() => handleRemoveYouTubeLink(index)}
@@ -792,36 +799,27 @@ const YoutubeLink = () => {
                     />
                   ) : (
                     <div className="w-full h-48 p-2 transcript-content rounded-lg overflow-auto">
-                      {transcript}
+                      {stripHtmlTags(transcript)}
                     </div>
                   )}
-                  {isEditing && (
-                    <div className="flex justify-center">
-                      <button
-                        onClick={handleSaveText}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
-                  <div className="flex flex-row space-x-2 mt-2">
+                   <div className="flex justify-center">
+                  {isEditing ? (
+                    <button
+                      onClick={handleSaveText}
+                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                    >
+                      Save
+                    </button>
+                  ) : (
                     <button
                       onClick={handleEditToggle}
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                     >
-                      <FontAwesomeIcon
-                        icon={faPenToSquare}
-                        className="text-white"
-                      />
+                      Edit
                     </button>
-                    <button
-                      onClick={handleCopyTranscriptContent}
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                    >
-                      <FontAwesomeIcon icon={faCopy} className="text-white" />
-                    </button>
-                  </div>
+                  )}
+                </div>
+                 
                 </div>
               )}
             </div>
@@ -912,14 +910,18 @@ const YoutubeLink = () => {
                     <FontAwesomeIcon icon={faCopy} className="text-white" />
                   </button>
                   <button
-  onClick={() => handleDownloadHtmlContent(currentTitle, generatedContent)}
-  className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
->
-  <FontAwesomeIcon icon={faDownload} className="text-white" />
-</button>
+                    onClick={() =>
+                      handleDownloadHtmlContent(currentTitle, generatedContent)
+                    }
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                  >
+                    <FontAwesomeIcon icon={faDownload} className="text-white" />
+                  </button>
 
                   <button
-                    onClick={() => handleShareContent(currentTitle, generatedContent)}
+                    onClick={() =>
+                      handleShareContent(currentTitle, generatedContent)
+                    }
                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
                   >
                     <FontAwesomeIcon icon={faShareAlt} className="text-white" />
@@ -947,10 +949,18 @@ const YoutubeLink = () => {
                 )}
                 {isEditing && (
                   <button
-                    onClick={() => setIsEditing(false)}
+                    onClick={handleSaveText}
                     className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                   >
                     Save
+                  </button>
+                )}
+                {!isEditing && (
+                  <button
+                    onClick={handleEditToggle}
+                    className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                  >
+                    Edit
                   </button>
                 )}
               </div>

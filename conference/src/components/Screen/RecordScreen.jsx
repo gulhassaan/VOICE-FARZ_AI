@@ -28,7 +28,7 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
-import WhitePaper from "../../Assets/images/whitepaper1.png";
+import MeetingNotes from "../../Assets/images/whitepaper.png";
 import Facebook from "../../Assets/images/facebook1.png";
 import Twitter from "../../Assets/images/twitter1.png";
 import LinkedIn from "../../Assets/images/linkedin1.png";
@@ -38,16 +38,15 @@ import "../../App.css";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { FacebookButton, FacebookCount } from "react-social";
-
-import {TokenContext} from "../../App";
-
+import { TokenContext } from "../../App";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const getEncodedUrl = (content) => encodeURIComponent(content);
 
 const RecordScreen = () => {
-  const token = useContext(TokenContext)
+  const token = useContext(TokenContext);
   const history = useHistory();
   useEffect(() => {
-    // const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire({
         icon: "warning",
@@ -55,9 +54,10 @@ const RecordScreen = () => {
         text: "Please log in again.",
         confirmButtonText: "OK",
       }).then(() => {
-        // history.push("/");
+        history.push("/");
       });
     }
+    
   }, [history]);
 
   const currentUrl = window.location.href;
@@ -91,7 +91,6 @@ const RecordScreen = () => {
   const profilePictureInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
-  // const token = localStorage.getItem("token");
   const generatedPostRef = useRef(null);
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
@@ -100,7 +99,7 @@ const RecordScreen = () => {
       }
     }, 100);
   };
-  
+
   let editorInstance = useRef(null);
 
   useEffect(() => {
@@ -195,6 +194,8 @@ const RecordScreen = () => {
     }
     setIsEditing(false);
     markStepAsCompleted(1);
+    setIsTranscriptOpen(!isTranscriptOpen);
+
   };
 
   const handleSaveGeneratedText = () => {
@@ -244,7 +245,12 @@ const RecordScreen = () => {
       formData.append("file", audioBlob, "recording.wav");
     } else {
       console.error("No files or audio chunks to upload.");
-      alert("No files or recordings available for upload.");
+  // Success toast for copied content
+toast.error("No files or audio chunks to upload.", {
+  position: "top-right", 
+  autoClose: 5000,      
+});
+
       return;
     }
 
@@ -261,7 +267,7 @@ const RecordScreen = () => {
 
       const customHeader = `
         <div class="flex justify-between items-center w-full">
-          <div class="text-lg">Transcribing</div>
+          <div class="text-lg">Processing Your Recording</div>
           <button id="close-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -394,13 +400,14 @@ const RecordScreen = () => {
       setFiles([file]);
       setDummyState((prev) => !prev);
     }
-    Swal.fire({
-      position: "top-end",
-      icon: "success",
-      title: "Your recording is saved",
-      showConfirmButton: false,
-      timer: 500,
-    });
+    toast.success(
+      "Your recording is saved",
+      {
+        position: "top-right", // Use string values instead of constants
+        autoClose: 500,
+      }
+    );
+    
     setIsRecording(false);
     setIsPaused(false);
     clearInterval(intervalRef.current);
@@ -521,9 +528,9 @@ const RecordScreen = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        eBook: "ebook",
+        "Meeting Notes": "meeting_notes",
         Blog: "blog_post",
-        "White Paper": "whitepaper",
+        eBook: "ebook",
         Facebook: "facebook_post",
         Twitter: "twitter_post",
         LinkedIn: "linkedin_post",
@@ -568,19 +575,18 @@ const RecordScreen = () => {
   const handleCopyTranscriptContent = () => {
     const contentElement = isEditing
       ? document.querySelector("textarea")
-      : document.querySelector(
-          ".transcript-content"
-        );
+      : document.querySelector(".transcript-content");
     if (contentElement) {
       const content = contentElement.value || contentElement.textContent;
       navigator.clipboard
         .writeText(content)
         .then(() => {
-          Swal.fire(
-            "Copied!",
-            "The content has been copied to clipboard.",
-            "success"
-          );
+        // Success toast for copied content
+toast.success("Copied! The content has been copied to clipboard.", {
+  position: "top-right", // Position can be adjusted as needed
+  autoClose: 5000,       // Auto close after 5 seconds
+});
+
         })
         .catch((err) => {
           console.error("Failed to copy: ", err);
@@ -595,7 +601,12 @@ const RecordScreen = () => {
     navigator.clipboard
       .writeText(textContent)
       .then(() => {
-        Swal.fire("Copied!", "The content has been copied to clipboard.", "success");
+       // Success toast for copied content
+toast.success("Copied! The content has been copied to clipboard.", {
+  position: "top-right", // Position can be adjusted as needed
+  autoClose: 5000,       // Auto close after 5 seconds
+});
+
       })
       .catch((err) => {
         console.error("Failed to copy:", err);
@@ -670,10 +681,10 @@ const RecordScreen = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "eBook",
-      description: "Turn your content into a detailed eBook.",
-      image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      title: "Meeting Notes",
+      description: "Generate concise and informative meeting notes.",
+      image: MeetingNotes,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
@@ -684,10 +695,10 @@ const RecordScreen = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "White Paper",
-      description: "Generate an informative white paper.",
-      image: WhitePaper,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_whitepaper/",
+      title: "eBook",
+      description: "Turn your content into a detailed eBook.",
+      image: eBook,
+      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
@@ -755,13 +766,12 @@ const RecordScreen = () => {
     <div className="container mx-auto px-0">
       <div className="flex mt-4 flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
         <div className="flex items-center mb-4 md:mb-0">
-          {/* <h1 className="lg:text-2xl text-sm font-bold">{username}👋</h1> */}
           <p
-        className="text-lg font-semibold mt-2 cursor-pointer"
-        onClick={handleDashboardClick}
-      >
-        Dashboard &gt; <span className="text-gray-400">Live Recording</span>
-      </p>
+            className="text-lg font-semibold mt-2 cursor-pointer"
+            onClick={handleDashboardClick}
+          >
+            Dashboard &gt; <span className="text-gray-400">Live Recording</span>
+          </p>
         </div>
         <div className="relative">
           <button
@@ -794,8 +804,6 @@ const RecordScreen = () => {
         </div>
       </div>
 
-     
-
       <p
         className="text-lg font-semibold my-8 cursor-pointer"
         onClick={() =>
@@ -815,11 +823,12 @@ const RecordScreen = () => {
             {profilePictureName}
           </span>
         )}
-       {profilePictureName && 
-       <img
-       alt="not found"
-        src={URL.createObjectURL(uploadedFile.current)}
-     />} 
+        {profilePictureName && (
+          <img
+            alt="not found"
+            src={URL.createObjectURL(uploadedFile.current)}
+          />
+        )}
       </p>
       <input
         type="file"
@@ -864,30 +873,30 @@ const RecordScreen = () => {
                       </div>
 
                       <div className="flex items-center justify-center space-x-2 lg:space-x-4">
-                      <div className="relative group">
-  <button
-    onClick={handleSave}
-    className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
-  >
-    <FontAwesomeIcon icon={faSave} />
-  </button>
-  <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
-    Save File
-    <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
-  </div>
-</div>
+                        <div className="relative group">
+                          <button
+                            onClick={handleSave}
+                            className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
+                          >
+                            <FontAwesomeIcon icon={faSave} />
+                          </button>
+                          <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
+                            Save File
+                            <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
+                          </div>
+                        </div>
 
                         <div className="relative flex items-center justify-center">
                           {isRecording && !isPaused && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="absolute w-20 h-20 rounded-full bg-red-500 opacity-25 animate-pulse"></span>
-                              <span className="absolute w-12 h-12 rounded-full bg-red-500 opacity-25 animate-pulse delay-200"></span>
-                              <span className="absolute w-8 h-8 rounded-full bg-red-500 opacity-25 animate-pulse delay-400"></span>
+                              <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
+                              <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
+                              <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
                             </div>
                           )}
                           <button
                             onClick={handleStartPause}
-                            className="w-14 h-14 flex items-center justify-center text-white bg-red-500 rounded-full relative z-10"
+                            className="w-14 h-14 flex items-center justify-center text-white bg-[#F2911B] rounded-full relative z-10"
                           >
                             <FontAwesomeIcon
                               icon={
@@ -899,18 +908,17 @@ const RecordScreen = () => {
                           </button>
                         </div>
                         <div className="relative group">
-  <button
-    onClick={handleUploadClick}
-    className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
-  >
-    <FontAwesomeIcon icon={faPaperPlane} />
-  </button>
-  <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
-    Upload file
-    <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
-  </div>
-</div>
-
+                          <button
+                            onClick={handleUploadClick}
+                            className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
+                          >
+                            <FontAwesomeIcon icon={faPaperPlane} />
+                          </button>
+                          <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
+                            Upload file
+                            <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <audio
@@ -985,33 +993,24 @@ const RecordScreen = () => {
                       {transcript}
                     </div>
                   )}
-                  {isEditing && (
-                    <div className="flex justify-center">
+                  <div className="flex justify-center">
+                    {isEditing ? (
                       <button
                         onClick={handleSaveText}
                         className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                       >
                         Save
                       </button>
-                    </div>
-                  )}
-                  <div className="flex flex-row space-x-2 mt-2">
-                    <button
-                      onClick={handleEditToggle}
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                    >
-                      <FontAwesomeIcon
-                        icon={faPenToSquare}
-                        className="text-white"
-                      />
-                    </button>
-                    <button
-                      onClick={handleCopyTranscriptContent}
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                    >
-                      <FontAwesomeIcon icon={faCopy} className="text-white" />
-                    </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggle}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Edit
+                      </button>
+                    )}
                   </div>
+                
                 </div>
               )}
             </div>
@@ -1055,7 +1054,6 @@ const RecordScreen = () => {
                         )
                       }
                     >
-                      
                       <div
                         className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 transition-opacity ${
                           generatedStatus[index]
@@ -1093,13 +1091,14 @@ const RecordScreen = () => {
             </div>
           </div>
 
-         
-            {/* <h2 className="text-2xl font-bold mb-4">Generated Post</h2> */}
-            {generatedPost && (
-               <div className="flex flex-col mt-8" id={generatedPost.title}>
+          {generatedPost && (
+            <div className="flex flex-col mt-8" id={generatedPost.title}>
               <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
                 <div className="flex items-center justify-between mb-4">
-                  <p className="font-bold text-lg"> Generated {generatedPost.title}</p>
+                  <p className="font-bold text-lg">
+                    {" "}
+                    Generated {generatedPost.title}
+                  </p>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleCopyContent(generatedPost.content)}
@@ -1144,32 +1143,37 @@ const RecordScreen = () => {
                         setGeneratedPost({ ...generatedPost, content: data });
                       }}
                     />
+                  ) : generatedPost.isHtmlContent ? (
+                    <div
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: generatedPost.content }}
+                    />
                   ) : (
-                    generatedPost.isHtmlContent ? (
-                      <div
-                        className="prose max-w-none"
-                        dangerouslySetInnerHTML={{ __html: generatedPost.content }}
-                      />
-                    ) : (
-                      <div className="whitespace-pre-wrap">
-                        {stripHtmlTags(generatedPost.content)}
-                      </div>
-                    )
+                    <div className="whitespace-pre-wrap">
+                      {stripHtmlTags(generatedPost.content)}
+                    </div>
                   )}
                   <div className="flex justify-center mt-4">
-                    {isEditingGenerated && (
+                    {isEditingGenerated ? (
                       <button
                         onClick={handleSaveGeneratedText}
                         className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                       >
                         Save
                       </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggleGenerated}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Edit
+                      </button>
                     )}
                   </div>
                 </div>
               </div>
-         </div>    )}
-         
+            </div>
+          )}
         </div>
       </div>
     </div>

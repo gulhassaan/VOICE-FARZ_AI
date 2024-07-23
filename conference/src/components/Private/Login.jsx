@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useHistory, NavLink, useLocation } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Logo from '../../Assets/images/logo.png';
 import Google from '../../Assets/images/google.png';
 import Apple from '../../Assets/images/apple.png';
-
-const MySwal = withReactContent(Swal);
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -36,11 +34,7 @@ const Login = () => {
 
         // Form validation
         if (formData.username === formData.password) {
-            MySwal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'Username and password cannot be the same',
-            });
+            toast.error('Fill out Valid username and password');
             return; // Exit the function if validation fails
         }
 
@@ -55,14 +49,7 @@ const Login = () => {
                     'X-CSRFToken': 'Wdz2FF7IfhClKygAS1kqxaIVJJaxnHTwMM4SagZWTRlRqxbBucWvPvEiY8qY4IBQ' 
                 }
             });
-            MySwal.fire({
-                icon: 'success',
-                title: 'Login Successful',
-                text: 'Redirecting to dashboard...',
-                showConfirmButton: false,
-                timer: 1500,
-                timerProgressBar: true
-            });
+            toast.success('Login successful! Redirecting to dashboard...');
             
 
             console.log('Response:', response.data);
@@ -75,11 +62,7 @@ const Login = () => {
             }, 1000); 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);
-            MySwal.fire({
-                icon: 'error',
-                title: 'Login Error',
-                text: error.response?.data?.error || 'An error occurred',
-            });
+            toast.error(error.response?.data?.error || 'An error occurred');
         }
     };
 
@@ -120,14 +103,7 @@ const Login = () => {
                 localStorage.setItem('Email', user_info.email);
                 localStorage.setItem('GoogleProfileURL', user_info.google_picture_url);
                 localStorage.setItem("token", token);
-                MySwal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Redirecting to dashboard...',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    timerProgressBar: true
-                });
+                toast.success('Login successful! Redirecting to dashboard...');
                 setLoader(false);
                 history.push('/dashboard');
             } catch (err) {
@@ -151,6 +127,7 @@ const Login = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-white">
+            <ToastContainer />
             <div className="w-full max-w-xl p-8 space-y-1 bg-white">
                 <div className="flex justify-center mb-4">
                     <img src={Logo} alt="Farz AI Logo" className="h-16" />

@@ -16,7 +16,7 @@ import {
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
-import WhitePaper from "../../Assets/images/whitepaper1.png";
+import MeetingNotes from "../../Assets/images/whitepaper1.png";
 import Facebook from "../../Assets/images/facebook1.png";
 import Twitter from "../../Assets/images/twitter1.png";
 import LinkedIn from "../../Assets/images/linkedin1.png";
@@ -27,7 +27,8 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const HistoryDetails = () => {
   const { id } = useParams();
   const history = useHistory();
@@ -37,7 +38,7 @@ const HistoryDetails = () => {
     summary: false,
     ebook: false,
     blog_post: false,
-    whitepaper: false,
+    meeting_notes: false,
     facebook_post: false,
     twitter_post: false,
     linkedin_post: false,
@@ -84,7 +85,7 @@ const HistoryDetails = () => {
       summary: data.summary !== null,
       ebook: data.ebook !== null,
       blog_post: data.blog_post !== null,
-      whitepaper: data.whitepaper !== null,
+      meeting_notes: data.meeting_notes !== null,
       facebook_post: data.facebook_post !== null,
       twitter_post: data.twitter_post !== null,
       linkedin_post: data.linkedin_post !== null,
@@ -134,7 +135,7 @@ const HistoryDetails = () => {
         summary: "https://speechinsightsweb.azurewebsites.net/generate_summary/",
         ebook: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
         blog_post: "https://speechinsightsweb.azurewebsites.net/generate_blog_post/",
-        whitepaper: "https://speechinsightsweb.azurewebsites.net/generate_whitepaper/",
+        meeting_notes: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
         facebook_post: "https://speechinsightsweb.azurewebsites.net/generate_facebook_post/",
         twitter_post: "https://speechinsightsweb.azurewebsites.net/generate_twitter_post/",
         linkedin_post: "https://speechinsightsweb.azurewebsites.net/generate_linkedin_post/",
@@ -212,7 +213,11 @@ const HistoryDetails = () => {
     document.addEventListener("copy", listener);
     document.execCommand("copy");
     document.removeEventListener("copy", listener);
-    Swal.fire("Copied!", "The content has been copied to clipboard.", "success");
+    toast.success("Copied! The content has been copied to clipboard.", {
+      position: "top-right", 
+      autoClose: 5000,       
+    });
+    
   };
 
   const handleDownloadContent = (title, content) => {
@@ -262,7 +267,7 @@ const HistoryDetails = () => {
   };
 
   const handleEditToggleTranscript = () => {
-    setIsEditingTranscript(!isEditingTranscript);
+    setIsEditingTranscript(true);
   };
 
   const handleSaveTranscript = () => {
@@ -300,7 +305,7 @@ const HistoryDetails = () => {
     { title: "Summary", type: "summary", image: Summary },
     { title: "eBook", type: "ebook", image: eBook },
     { title: "Blog", type: "blog_post", image: Blog },
-    { title: "White Paper", type: "whitepaper", image: WhitePaper },
+    { title: "Meeting Notes", type: "meeting_notes", image: MeetingNotes },
     { title: "Instagram", type: "instagram_post", image: Instagram },
     { title: "Facebook", type: "facebook_post", image: Facebook },
     { title: "Twitter", type: "twitter_post", image: Twitter },
@@ -418,30 +423,23 @@ const HistoryDetails = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-row space-x-2 mt-2">
-                  <button
-                    onClick={handleEditToggleTranscript}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faPenToSquare} className="text-white" />
-                  </button>
-                  <button
-                    onClick={() => handleCopyContent(historyDetails.text)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faCopy} className="text-white" />
-                  </button>
-                </div>
-                {isEditingTranscript && (
-                  <div className="flex justify-center">
+                <div className="flex justify-center mt-2">
+                  {isEditingTranscript ? (
                     <button
                       onClick={handleSaveTranscript}
                       className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
                     >
                       Save
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <button
+                      onClick={handleEditToggleTranscript}
+                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -503,7 +501,7 @@ const HistoryDetails = () => {
           {generatedPost && (
             <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl" ref={generatedPostRef}>
               <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated {generatedPost.title}</p>
+                <p className="font-bold text-lg">Generated Post</p>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleCopyContent(generatedPost.content)}
@@ -571,3 +569,7 @@ const HistoryDetails = () => {
 };
 
 export default HistoryDetails;
+
+
+
+         

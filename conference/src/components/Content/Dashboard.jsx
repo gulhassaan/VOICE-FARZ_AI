@@ -7,19 +7,19 @@ import Recording from "../../Assets/images/recordIcon.png";
 import UploadFile from "../../Assets/images/uploadIcon.png";
 import YoutubeLink from "../../Assets/images/youtubeIcon.png";
 import DashboardMain from '../../Assets/images/dashboardmain.png';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Dashboard = () => {
     const history = useHistory();
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Session Expired',
-                text: 'Please log in again.',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                history.push('/');
+            toast.warn('Session Expired. Please log in again.', {
+                position: toast.POSITION.TOP_CENTER,
+                onClose: () => {
+                    history.push('/');
+                },
             });
         }
     }, [history]);
@@ -41,9 +41,9 @@ const Dashboard = () => {
 
     useEffect(() => {
         const storedUsername = localStorage.getItem('Username');
-        const storedProfilePicture = localStorage.getItem('ProfilePicture'); // Assuming you store the profile picture URL in localStorage with this key
-        setUsername(storedUsername || 'User'); // Default to 'User' if no username is found
-        setProfilePicture(storedProfilePicture || ''); // Default to empty string if no profile picture is found
+        const storedProfilePicture = localStorage.getItem('ProfilePicture'); 
+        setUsername(storedUsername || 'User'); 
+        setProfilePicture(storedProfilePicture || '');
     }, []);
 
     const toggleDropdown = () => {
