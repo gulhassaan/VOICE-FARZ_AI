@@ -23,6 +23,8 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - name: Install apt-utils
+        run: sudo apt-get update && sudo apt-get install -y apt-utils
       - name: Install Dependencies
         run: npm install
         working-directory: ./conference
