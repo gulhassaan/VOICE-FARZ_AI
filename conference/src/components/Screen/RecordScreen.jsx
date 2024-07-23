@@ -20,6 +20,7 @@ import {
   faSave,
   faMicrophone,
   faUpload,
+  faCloudUploadAlt
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -349,20 +350,8 @@ toast.error("No files or audio chunks to upload.", {
     setIsGenerateOpen(!isGenerateOpen);
   };
 
-  const handleStartPause = () => {
-    if (isRecording) {
-      if (isPaused) {
-        setIsPaused(false);
-        intervalRef.current = setInterval(() => {
-          setTime((prevTime) => prevTime + 1);
-        }, 1000);
-        mediaRecorder.resume();
-      } else {
-        setIsPaused(true);
-        clearInterval(intervalRef.current);
-        mediaRecorder.pause();
-      }
-    } else {
+  const handleStart = () => {
+    if (!isRecording) {
       setIsRecording(true);
       setIsPaused(false);
       setTime(0);
@@ -388,6 +377,20 @@ toast.error("No files or audio chunks to upload.", {
             "Error accessing microphone. Please ensure the microphone is available."
           );
         });
+    }
+  };
+
+  const handlePause = () => {
+    if (isRecording && !isPaused) {
+      setIsPaused(true);
+      clearInterval(intervalRef.current);
+      mediaRecorder.pause();
+    } else if (isRecording && isPaused) {
+      setIsPaused(false);
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+      mediaRecorder.resume();
     }
   };
 
@@ -864,7 +867,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
               </div>
               {isLiveRecordOpen && (
                 <div className="flex flex-col">
-                  <div className="bg-gray-50 border-dashed border-2 border-gray-300 p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
+                  <div className="p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
                     <div className="text-center w-full">
                       <div className="flex items-center justify-center mb-2">
                         <span className="text-xl font-bold">
@@ -872,54 +875,65 @@ toast.success("Copied! The content has been copied to clipboard.", {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-center space-x-2 lg:space-x-4">
-                        <div className="relative group">
-                          <button
-                            onClick={handleSave}
-                            className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
-                          >
-                            <FontAwesomeIcon icon={faSave} />
-                          </button>
-                          <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
-                            Save File
-                            <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
-                          </div>
-                        </div>
 
-                        <div className="relative flex items-center justify-center">
-                          {isRecording && !isPaused && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
-                              <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
-                              <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
-                            </div>
-                          )}
-                          <button
-                            onClick={handleStartPause}
-                            className="w-14 h-14 flex items-center justify-center text-white bg-[#F2911B] rounded-full relative z-10"
-                          >
-                            <FontAwesomeIcon
-                              icon={
-                                isPaused || !isRecording
-                                  ? faMicrophone
-                                  : faPause
-                              }
-                            />
-                          </button>
-                        </div>
-                        <div className="relative group">
-                          <button
-                            onClick={handleUploadClick}
-                            className="text-[#F2911B] px-4 py-2 rounded-full border border-[#F2911B] hover:py-3 hover:px-5"
-                          >
-                            <FontAwesomeIcon icon={faPaperPlane} />
-                          </button>
-                          <div className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-[#F2911B] text-white text-xs rounded py-1 px-3">
-                            Upload file
-                            <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-t-4 border-t-[#F2911B] border-l-4 border-l-transparent border-r-4 border-r-transparent"></div>
-                          </div>
-                        </div>
-                      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+                      <div className="flex items-center justify-center space-x-8">
+  <div className="relative group">
+    <button
+      onClick={handlePause}
+      className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+    >
+      <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+    </button>
+  </div>
+  <div className="relative flex items-center justify-center">
+    {isRecording && !isPaused && (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
+        <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
+        <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
+      </div>
+    )}
+    <button
+      onClick={isRecording ? handleSave : handleStart}
+      className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10
+      "
+    >
+      <FontAwesomeIcon icon={isRecording ? faSave : faMicrophone} />
+    </button>
+  </div>
+  <div className="relative group">
+    <button
+      onClick={handleUploadClick}
+      className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+    >
+  <FontAwesomeIcon icon={faCloudUploadAlt} />
+    </button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
                     </div>
                     <audio
                       ref={audioRef}
