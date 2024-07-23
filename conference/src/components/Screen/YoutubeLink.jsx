@@ -33,6 +33,7 @@ import { jsPDF } from "jspdf";
 import "../../App.css";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 const YoutubeLink = () => {
   const history = useHistory();
   useEffect(() => {
@@ -52,6 +53,7 @@ const YoutubeLink = () => {
   const [files, setFiles] = useState([]);
   const [isYouTubeLinkOpen, setIsYouTubeLinkOpen] = useState(true);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
+  const [isUploadCoverOpen, setIsUploadCoverOpen] = useState(true);
   const [isGenerateOpen, setIsGenerateOpen] = useState(true);
   const [youtubeLinks, setYoutubeLinks] = useState([""]);
   const [transcript, setTranscript] = useState("");
@@ -59,11 +61,13 @@ const YoutubeLink = () => {
   const [speechThreadId, setSpeechThreadId] = useState(null);
   const [generatedStatus, setGeneratedStatus] = useState([]);
   const [generatedContent, setGeneratedContent] = useState("");
-  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false]);
+  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false, false]);
   const [savedGeneratedPosts, setSavedGeneratedPosts] = useState({});
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
+  const [coverImage, setCoverImage] = useState(null);
   const profilePictureInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
   const inputRef = useRef(null);
   const token = localStorage.getItem("token");
@@ -145,7 +149,6 @@ const YoutubeLink = () => {
   const handleSaveText = () => {
     setIsEditing(false);
     setIsTranscriptOpen(!isTranscriptOpen);
-
   };
 
   const handleYouTubeLinkChange = (index, event) => {
@@ -264,7 +267,7 @@ const YoutubeLink = () => {
         );
       }
     }
-    setIsYouTubeLinkOpen(!isYouTubeLinkOpen)
+    setIsYouTubeLinkOpen(!isYouTubeLinkOpen);
   };
 
   const handleCopyNewlyGeneratedContent = () => {
@@ -285,11 +288,9 @@ const YoutubeLink = () => {
         .writeText(content)
         .then(() => {
           toast.success("Copied! The content has been copied to clipboard.", {
-            position: "top-right", 
-            autoClose: 5000,       
+            position: "top-right",
+            autoClose: 5000,
           });
-          
-
         })
         .catch((err) => {
           console.error("Failed to copy:", err);
@@ -308,11 +309,10 @@ const YoutubeLink = () => {
       navigator.clipboard
         .writeText(content)
         .then(() => {
-          toast.success("Copied! The content has been copied to clipboard."
-            
-          );
-          
-
+          toast.success("Copied! The content has been copied to clipboard.", {
+            position: "top-right",
+            autoClose: 5000,
+          });
         })
         .catch((err) => {
           console.error("Failed to copy: ", err);
@@ -436,7 +436,7 @@ const YoutubeLink = () => {
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
-      markStepAsCompleted(2);
+      markStepAsCompleted(3);
 
       Swal.close(); // Close the Swal alert here after generation is complete
     } catch (error) {
@@ -458,6 +458,37 @@ const YoutubeLink = () => {
         );
       }
     }
+  };
+
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImage(reader.result);
+        markStepAsCompleted(2);
+        setIsUploadCoverOpen(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImage(reader.result);
+        markStepAsCompleted(2);
+        setIsUploadCoverOpen(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
   };
 
   const handleDownloadHtmlContent = (title, content) => {
@@ -594,6 +625,7 @@ const YoutubeLink = () => {
       ? "bg-[#F2911B] text-white"
       : "bg-gray-400 text-white";
   };
+
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [username, setUsername] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
@@ -629,7 +661,6 @@ const YoutubeLink = () => {
     <div className="container mx-auto px-4">
       <div className="flex mt-4 flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
         <div className="flex items-center mb-4 md:mb-0">
-          {/* <h1 className="lg:text-2xl text-sm font-bold">{username}👋</h1> */}
           <p
             className="text-lg font-semibold mt-2 cursor-pointer"
             onClick={handleDashboardClick}
@@ -802,29 +833,89 @@ const YoutubeLink = () => {
                       {stripHtmlTags(transcript)}
                     </div>
                   )}
-                   <div className="flex justify-center">
-                  {isEditing ? (
-                    <button
-                      onClick={handleSaveText}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleEditToggle}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
-                 
+                  <div className="flex justify-center">
+                    {isEditing ? (
+                      <button
+                        onClick={handleSaveText}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Save
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggle}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </div>
-
+          <div className="flex items-start">
+            <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
+              <div
+                className={`flex items-center justify-between mb-4 cursor-pointer ${
+                  isUploadCoverOpen ? "bg-transparent" : ""
+                }`}
+                onClick={() => setIsUploadCoverOpen(!isUploadCoverOpen)}
+              >
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+                      2
+                    )}`}
+                  >
+                    3
+                  </span>
+                  <p className="font-bold text-lg">Upload Cover (Optional)</p>
+                </div>
+                <FontAwesomeIcon
+                  icon={isUploadCoverOpen ? faAngleUp : faAngleDown}
+                />
+              </div>
+              {isUploadCoverOpen && (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                  <div className="flex flex-col items-center w-full mt-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={coverImageInputRef}
+                      className="hidden"
+                      onChange={handleCoverImageChange}
+                    />
+                    {coverImage ? (
+                      <div className="relative flex flex-col items-center mb-2">
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg"
+                        />
+                        <button
+                          className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
+                          onClick={() => setCoverImage(null)}
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
+                        onClick={() => coverImageInputRef.current.click()}
+                      >
+                        <p className="text-gray-400">Drag & Drop file here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="relative bg-white shadow-md rounded-3xl p-6">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -835,10 +926,10 @@ const YoutubeLink = () => {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                    2
+                    3
                   )}`}
                 >
-                  3
+                  4
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -929,6 +1020,13 @@ const YoutubeLink = () => {
                 </div>
               </div>
               <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg overflow-auto text-sm">
+                {coverImage && (
+                  <img
+                    src={coverImage}
+                    alt="Cover"
+                    className="h-48 w-full object-cover rounded-lg mb-4"
+                  />
+                )}
                 {isEditing ? (
                   <CKEditor
                     editor={ClassicEditor}

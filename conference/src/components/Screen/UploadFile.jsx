@@ -63,6 +63,7 @@ const UploadFile = () => {
   const [isLiveRecordOpen, setIsLiveRecordOpen] = useState(true);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
   const [isGenerateOpen, setIsGenerateOpen] = useState(true);
+  const [isCoverUploadOpen, setIsCoverUploadOpen] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [time, setTime] = useState(0);
@@ -73,18 +74,20 @@ const UploadFile = () => {
   const [speechThreadId, setSpeechThreadId] = useState(null);
   const [generatedStatus, setGeneratedStatus] = useState([]);
   const [generatedContent, setGeneratedContent] = useState("");
-  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false]);
+  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false, false]);
   const [savedGeneratedPosts, setSavedGeneratedPosts] = useState({});
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
   const [isEditingGenerated, setIsEditingGenerated] = useState(false);
   const [isEditingSavedGenerated, setIsEditingSavedGenerated] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
-  const [generatedPost, setGeneratedPost] = useState(null); // State to store the latest generated post
+  const [generatedPost, setGeneratedPost] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
 
   const intervalRef = useRef(null);
   const inputRef = useRef(null);
   const profilePictureInputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
   const token = localStorage.getItem("token");
@@ -154,6 +157,24 @@ const UploadFile = () => {
           });
       } else {
         console.error("Invalid file type. Please select an image file.");
+      }
+    }
+  };
+
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const validImageTypes = ["image/jpeg", "image/png"];
+      if (validImageTypes.includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setCoverImage(reader.result);
+          markStepAsCompleted(2); // Mark Step 3 as completed
+          setIsCoverUploadOpen(false); // Close the section
+        };
+        reader.readAsDataURL(file);
+      } else {
+        console.error("Invalid file type. Please select a JPG or PNG image.");
       }
     }
   };
@@ -352,6 +373,10 @@ const UploadFile = () => {
     setIsGenerateOpen(!isGenerateOpen);
   };
 
+  const toggleCoverUploadSection = () => {
+    setIsCoverUploadOpen(!isCoverUploadOpen);
+  };
+
   const handleStartPause = () => {
     if (isRecording) {
       if (isPaused) {
@@ -548,7 +573,7 @@ const UploadFile = () => {
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
-      markStepAsCompleted(2);
+      markStepAsCompleted(3);
     } catch (error) {
       console.error("Error in generating content:", error);
       if (error.response) {
@@ -973,9 +998,9 @@ toast.success("Copied! The content has been copied to clipboard.", {
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
-                isGenerateOpen ? "bg-transparent" : ""
+                isCoverUploadOpen ? "bg-transparent" : ""
               }`}
-              onClick={toggleGenerateSection}
+              onClick={toggleCoverUploadSection}
             >
               <div className="flex items-center space-x-2">
                 <span
@@ -984,6 +1009,66 @@ toast.success("Copied! The content has been copied to clipboard.", {
                   )}`}
                 >
                   3
+                </span>
+                <p className="font-bold text-lg">Upload Cover (Optional)</p>
+              </div>
+              <FontAwesomeIcon
+                icon={isCoverUploadOpen ? faAngleUp : faAngleDown}
+              />
+            </div>
+            {isCoverUploadOpen && (
+              <div className="flex flex-col items-center w-full mt-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={coverImageInputRef}
+                  className="hidden"
+                  onChange={handleCoverImageChange}
+                />
+                {coverImage ? (
+                  <div className="relative flex flex-col items-center mb-2">
+                    <img
+                      src={coverImage}
+                      alt="Cover"
+                      className="h-48 w-full object-cover rounded-lg"
+                    />
+                    <button
+                      className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
+                      onClick={() => setCoverImage(null)}
+                    >
+                      <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="h-48 w-full border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center"
+                    onClick={() =>
+                      coverImageInputRef.current && coverImageInputRef.current.click()
+                    }
+                  >
+                    <p className="text-gray-500">Drag & Drop file here</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+  
+        <div className="flex items-start">
+          <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
+            <div
+              className={`flex items-center justify-between mb-4 cursor-pointer ${
+                isGenerateOpen ? "bg-transparent" : ""
+              }`}
+              onClick={toggleGenerateSection}
+            >
+              <div className="flex items-center space-x-2">
+                <span
+                  className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+                    3
+                  )}`}
+                >
+                  4
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -1051,6 +1136,13 @@ toast.success("Copied! The content has been copied to clipboard.", {
                 className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
                 id={generatedPost.title}
               >
+                {coverImage && (
+                  <img
+                    src={coverImage}
+                    alt="Cover"
+                    className="w-full h-64 object-cover rounded-lg mb-4"
+                  />
+                )}
                 <div className="flex items-center justify-between mb-4">
                   <p className="font-bold text-lg">
                     Generated {generatedPost.title}{" "}

@@ -76,10 +76,12 @@ const RecordScreen = () => {
   const [speechThreadId, setSpeechThreadId] = useState(null);
   const [generatedStatus, setGeneratedStatus] = useState([]);
   const [generatedContent, setGeneratedContent] = useState("");
-  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false]);
+  const [isStepCompleted, setIsStepCompleted] = useState([false, false, false, false]);
   const [savedGeneratedPosts, setSavedGeneratedPosts] = useState({});
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
+  const [coverImage, setCoverImage] = useState(null);
+  const [coverImageName, setCoverImageName] = useState("");
   const uploadedFile = useRef(null);
   const [dummyState, setDummyState] = useState(false);
   const [isEditingGenerated, setIsEditingGenerated] = useState(true); // Enable editing mode by default for generated content
@@ -89,6 +91,7 @@ const RecordScreen = () => {
 
   const intervalRef = useRef(null);
   const inputRef = useRef(null);
+  const coverImageInputRef = useRef(null);
   const profilePictureInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
@@ -161,6 +164,34 @@ const RecordScreen = () => {
         console.error("Invalid file type. Please select an image file.");
       }
     }
+  };
+
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    uploadedFile.current = event.target.files[0];
+    if (file) {
+      const validImageTypes = ["image/jpeg", "image/png"];
+      if (validImageTypes.includes(file.type)) {
+        setCoverImageName(file.name);
+        setCoverImage(URL.createObjectURL(file));
+        markStepAsCompleted(2);
+        setIsTranscriptOpen(false);
+      } else {
+        console.error("Invalid file type. Please select a JPG or PNG image.");
+      }
+    }
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      handleCoverImageChange({ target: { files: [file] } });
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
   };
 
   const handleEditToggle = () => {
@@ -556,7 +587,7 @@ toast.error("No files or audio chunks to upload.", {
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
-      markStepAsCompleted(2);
+      markStepAsCompleted(3);
       setTimeout(() => {
         document.getElementById(`generateBtn${title}`).click();
       }, 400);
@@ -875,65 +906,39 @@ toast.success("Copied! The content has been copied to clipboard.", {
                         </span>
                       </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                       <div className="flex items-center justify-center space-x-8">
-  <div className="relative group">
-    <button
-      onClick={handlePause}
-      className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
-    >
-      <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
-    </button>
-  </div>
-  <div className="relative flex items-center justify-center">
-    {isRecording && !isPaused && (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
-        <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
-        <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
-      </div>
-    )}
-    <button
-      onClick={isRecording ? handleSave : handleStart}
-      className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10
-      "
-    >
-      <FontAwesomeIcon icon={isRecording ? faSave : faMicrophone} />
-    </button>
-  </div>
-  <div className="relative group">
-    <button
-      onClick={handleUploadClick}
-      className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
-    >
-  <FontAwesomeIcon icon={faCloudUploadAlt} />
-    </button>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
+                        <div className="relative group">
+                          <button
+                            onClick={handlePause}
+                            className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+                          >
+                            <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+                          </button>
+                        </div>
+                        <div className="relative flex items-center justify-center">
+                          {isRecording && !isPaused && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
+                              <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
+                              <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
+                            </div>
+                          )}
+                          <button
+                            onClick={isRecording ? handleSave : handleStart}
+                            className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10"
+                          >
+                            <FontAwesomeIcon icon={isRecording ? faSave : faMicrophone} />
+                          </button>
+                        </div>
+                        <div className="relative group">
+                          <button
+                            onClick={handleUploadClick}
+                            className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+                          >
+                            <FontAwesomeIcon icon={faCloudUploadAlt} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                     <audio
                       ref={audioRef}
@@ -1045,6 +1050,69 @@ toast.success("Copied! The content has been copied to clipboard.", {
                     )}`}
                   >
                     3
+                  </span>
+                  <p className="font-bold text-lg">Upload Cover (Optional)</p>
+                </div>
+                <FontAwesomeIcon
+                  icon={isGenerateOpen ? faAngleUp : faAngleDown}
+                />
+              </div>
+              {isGenerateOpen && (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                  <div className="flex flex-col items-center w-full mt-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={coverImageInputRef}
+                      className="hidden"
+                      onChange={handleCoverImageChange}
+                    />
+                    {coverImage ? (
+                      <div className="relative flex flex-col items-center mb-2">
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg"
+                        />
+                        <button
+                          className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
+                          onClick={() => setCoverImage(null)}
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
+                        onClick={() => coverImageInputRef.current.click()}
+                      >
+                        <p className="text-gray-400">Drag & Drop file here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
+              <div
+                className={`flex items-center justify-between mb-4 cursor-pointer ${
+                  isGenerateOpen ? "bg-transparent" : ""
+                }`}
+                onClick={toggleGenerateSection}
+              >
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+                      3
+                    )}`}
+                  >
+                    4
                   </span>
                   <p className="font-bold text-lg">Generate</p>
                 </div>
@@ -1158,14 +1226,32 @@ toast.success("Copied! The content has been copied to clipboard.", {
                       }}
                     />
                   ) : generatedPost.isHtmlContent ? (
-                    <div
-                      className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: generatedPost.content }}
-                    />
+                    <>
+                      {coverImage && (
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg mb-4"
+                        />
+                      )}
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: generatedPost.content }}
+                      />
+                    </>
                   ) : (
-                    <div className="whitespace-pre-wrap">
-                      {stripHtmlTags(generatedPost.content)}
-                    </div>
+                    <>
+                      {coverImage && (
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg mb-4"
+                        />
+                      )}
+                      <div className="whitespace-pre-wrap">
+                        {stripHtmlTags(generatedPost.content)}
+                      </div>
+                    </>
                   )}
                   <div className="flex justify-center mt-4">
                     {isEditingGenerated ? (
