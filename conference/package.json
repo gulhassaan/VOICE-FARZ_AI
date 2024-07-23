@@ -35,11 +35,13 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "CI=false rimraf ./build && react-scripts build && rimraf ./build/**/*.map",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build",
+  "start": "react-scripts start",
+  "build": "CI=false rimraf ./build && react-scripts build && rimraf ./build//*.map",
+  "test": "react-scripts test",
+  "eject": "react-scripts eject"
+},
   "eslintConfig": {
     "extends": [
       "react-app",
