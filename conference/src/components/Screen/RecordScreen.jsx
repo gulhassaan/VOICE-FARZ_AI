@@ -20,6 +20,7 @@ import {
   faSave,
   faMicrophone,
   faUpload,
+  faStop,
   faCloudUploadAlt
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -90,7 +91,7 @@ const RecordScreen = () => {
   const [isEditingSavedGenerated, setIsEditingSavedGenerated] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
   const [generatedPost, setGeneratedPost] = useState(null);
-
+  const [showButtons, setShowButtons] = useState(false);
   const intervalRef = useRef(null);
   const inputRef = useRef(null);
   const coverImageInputRef = useRef(null);
@@ -261,6 +262,104 @@ const RecordScreen = () => {
     });
   };
 
+  /**For Audio Start */
+  const handleStart = () => {
+    if (!isRecording) {
+      setIsRecording(true);
+      setIsPaused(false);
+      setTime(0);
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+  
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          const newMediaRecorder = new MediaRecorder(stream);
+          setMediaRecorder(newMediaRecorder);
+  
+          newMediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              setAudioChunks((prevChunks) => [...prevChunks, event.data]);
+            }
+          };
+  
+          newMediaRecorder.start();
+        })
+        .catch((error) => {
+          console.error("Error accessing media devices.", error);
+          alert(
+            "Error accessing microphone. Please ensure the microphone is available."
+          );
+        });
+    }
+  };
+  /**For Audio Pause */  
+  const handlePause = () => {
+    if (isRecording && !isPaused) {
+      setIsPaused(true);
+      clearInterval(intervalRef.current);
+      mediaRecorder.pause();
+    } else if (isRecording && isPaused) {
+      setIsPaused(false);
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+      mediaRecorder.resume();
+    }
+  };
+  /**For Audio Save */ 
+  const handleSave = () => {
+    if (audioChunks.length > 0) {
+      const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+      const file = new File([audioBlob], "recording.wav", {
+        type: "audio/wav",
+      });
+      setFiles([file]);
+      setDummyState((prev) => !prev);
+    }
+    toast.success("Your recording is saved", {
+      position: "top-right",
+      autoClose: 500,
+    });
+  
+    setIsRecording(false);
+    setIsPaused(false);
+    clearInterval(intervalRef.current);
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      setMediaRecorder(null);
+    }
+    setAudioChunks([]);
+    if (audioRef.current) {
+      audioRef.current.src = "";
+    }
+  };
+  /**For Audio Reset */
+  const handleReset = () => {
+    // Stop the recording if it's ongoing
+    if (isRecording || isPaused) {
+      setIsRecording(false);
+      setIsPaused(false);
+      clearInterval(intervalRef.current);
+      if (mediaRecorder) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        setMediaRecorder(null);
+      }
+      setAudioChunks([]);
+      if (audioRef.current) {
+        audioRef.current.src = "";
+      }
+    }
+  
+    // Reset time and other states
+    setTime(0);
+    setFiles([]);
+    setDummyState((prev) => !prev);
+  };
+  /**For Audio Upload */
   const handleUploadClick = async () => {
     if (!token) {
       console.error("No token found. Please login first.");
@@ -366,6 +465,8 @@ toast.error("No files or audio chunks to upload.", {
     setIsLiveRecordOpen(!isLiveRecordOpen);
   };
 
+
+
   const handleDashboardClick = () => {
     history.push("/dashboard");
   };
@@ -383,80 +484,7 @@ toast.error("No files or audio chunks to upload.", {
     setIsGenerateOpen(!isGenerateOpen);
   };
 
-  const handleStart = () => {
-    if (!isRecording) {
-      setIsRecording(true);
-      setIsPaused(false);
-      setTime(0);
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 1000);
-
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          const newMediaRecorder = new MediaRecorder(stream);
-          setMediaRecorder(newMediaRecorder);
-
-          newMediaRecorder.ondataavailable = (event) => {
-            setAudioChunks((prevChunks) => [...prevChunks, event.data]);
-          };
-
-          newMediaRecorder.start();
-        })
-        .catch((error) => {
-          console.error("Error accessing media devices.", error);
-          alert(
-            "Error accessing microphone. Please ensure the microphone is available."
-          );
-        });
-    }
-  };
-
-  const handlePause = () => {
-    if (isRecording && !isPaused) {
-      setIsPaused(true);
-      clearInterval(intervalRef.current);
-      mediaRecorder.pause();
-    } else if (isRecording && isPaused) {
-      setIsPaused(false);
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 1000);
-      mediaRecorder.resume();
-    }
-  };
-
-  const handleSave = () => {
-    if (audioChunks.length > 0) {
-      const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-      const file = new File([audioBlob], "recording.wav", {
-        type: "audio/wav",
-      });
-      setFiles([file]);
-      setDummyState((prev) => !prev);
-    }
-    toast.success(
-      "Your recording is saved",
-      {
-        position: "top-right", // Use string values instead of constants
-        autoClose: 500,
-      }
-    );
-    
-    setIsRecording(false);
-    setIsPaused(false);
-    clearInterval(intervalRef.current);
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-      mediaRecorder.stream.getTracks().forEach((track) => track.stop());
-      setMediaRecorder(null);
-    }
-    setAudioChunks([]);
-    if (audioRef.current) {
-      audioRef.current.src = "";
-    }
-  };
+ 
 
   useEffect(() => {
     return () => clearInterval(intervalRef.current);
@@ -901,6 +929,9 @@ toast.success("Copied! The content has been copied to clipboard.", {
               {isLiveRecordOpen && (
                 <div className="flex flex-col">
                   <div className="p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
+
+
+
                     <div className="text-center w-full">
                       <div className="flex items-center justify-center mb-2">
                         <span className="text-xl font-bold">
@@ -908,60 +939,117 @@ toast.success("Copied! The content has been copied to clipboard.", {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-center space-x-8">
-                        <div className="relative group">
-                          <button
-                            onClick={handlePause}
-                            className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
-                          >
-                            <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
-                          </button>
-                        </div>
-                        <div className="relative flex items-center justify-center">
-                          {isRecording && !isPaused && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
-                              <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
-                              <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
-                            </div>
-                          )}
-                          <button
-                            onClick={isRecording ? handleSave : handleStart}
-                            className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10"
-                          >
-                            <FontAwesomeIcon icon={isRecording ? faSave : faMicrophone} />
-                          </button>
-                        </div>
-                        <div className="relative group">
-                          <button
-                            onClick={handleUploadClick}
-                            className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
-                          >
-                            <FontAwesomeIcon icon={faUpload} />
-                          </button>
-                        </div>
-                      </div>
+
+
+
+
+
+
+
+
+
+
+
+                      <div className="flex flex-col items-center justify-center space-y-4">
+      <div className="flex items-center justify-center space-x-8">
+        {!isRecording && audioChunks.length === 0 ? (
+          <button
+            onClick={handleStart}
+            className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10"
+          >
+            <FontAwesomeIcon icon={faMicrophone} />
+          </button>
+        ) : (
+          <>
+          <button
+  onClick={handlePause}
+  className={`flex items-center justify-center w-10 h-10 text-gray-700 text-2xl transition-opacity rounded-full ${
+    isPaused ? "opacity-50 animate-pulse bg-gray-200" : "opacity-100 bg-transparent"
+  }`}
+>
+              
+              <FontAwesomeIcon icon={faPause} />
+            </button>
+            <div className="relative flex items-center justify-center">
+              {isRecording && !isPaused && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="absolute w-20 h-20 rounded-full bg-[#F2911B] opacity-25 animate-pulse"></span>
+                  <span className="absolute w-12 h-12 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-200"></span>
+                  <span className="absolute w-8 h-8 rounded-full bg-[#F2911B] opacity-25 animate-pulse delay-400"></span>
+                </div>
+              )}
+              <button
+                onClick={handleSave}
+                className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10 mx-4"
+              >
+                <FontAwesomeIcon icon={faStop} />
+              </button>
+            </div>
+            <button
+              onClick={handleReset}
+              className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+            >
+              <FontAwesomeIcon icon={faRedo} />
+            </button>
+          </>
+        )}
+      </div>
+      {audioChunks.length > 0 && (
+        <div className="mt-4">
+          <button
+            onClick={handleUploadClick}
+            className="px-4 py-2 bg-[#F2911B] text-white rounded-full shadow-lg"
+          >
+            Submit
+          </button>
+        </div>
+      )}
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
+                    
                     <audio
                       ref={audioRef}
                       controls
                       className="mt-4 w-full hidden"
                     ></audio>
                   </div>
-                  <div className="flex flex-col items-center w-full mt-4">
+                  <div className="flex flex-col items-center w-full ">
                     <input
                       type="file"
                       ref={inputRef}
                       className="hidden"
                       onChange={handleFileChange}
                     />
-                    <div className="flex flex-wrap mb-4 space-x-2 w-full">
+                    <div className="flex flex-wrap  space-x-2 w-full">
                       {files.map((file, index) => (
                         <div
                           key={index}
                           className="relative flex flex-col items-center mb-2"
                         >
-                          <button
+                          {/* <button
                             className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
                             onClick={() => handleFileRemove(index)}
                           >
@@ -969,7 +1057,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
                               icon={faTimes}
                               className="text-xs"
                             />
-                          </button>
+                          </button> */}
                         </div>
                       ))}
                     </div>
