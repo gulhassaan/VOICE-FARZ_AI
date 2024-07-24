@@ -109,8 +109,8 @@ const Dashboard = () => {
             </div>
         </div>
 
-            <div className="flex flex-col items-center mt-4 p-8 bg-[#E8ECF4] rounded-2xl">
-                <img src={DashboardMain} alt="Change Your Speech Into Ideas" className="w-1/4 mb-8" />
+            <div className="flex flex-col items-center mt-4 p-8 bg-[#E8ECF4] rounded-2xl " style={{height:"82vh"}}>
+                <img src={DashboardMain} alt="Change Your Speech Into Ideas" className=" hidden lg:block md:block w-1/4 mb-8" />
                 <div className="text-center mb-8">
                     <h2 className="text-xl font-semibold">Amplify Your Reach: </h2>
                     <p className="text-gray-500 mt-2">Instantly Transform Audio/Video into Social Media Posts using Farz AI Voice Amplified.</p>

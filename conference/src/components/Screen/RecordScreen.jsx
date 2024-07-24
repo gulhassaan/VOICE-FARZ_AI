@@ -22,6 +22,8 @@ import {
   faUpload,
   faCloudUploadAlt
 } from "@fortawesome/free-solid-svg-icons";
+
+
 import axios from "axios";
 import Swal from "sweetalert2";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -845,13 +847,13 @@ toast.success("Copied! The content has been copied to clipboard.", {
           profilePictureInputRef.current.click()
         }
       >
-        <span className="border-2 border-[#F2911B] text-[#F2911B] rounded-full px-4 py-2 text-base">
+        {/* <span className="border-2 border-[#F2911B] text-[#F2911B] rounded-full px-4 py-2 text-base">
           <FontAwesomeIcon
             className="text-[#F2911B] text-base"
             icon={faUpload}
           />{" "}
           Upload Photo
-        </span>
+        </span> */}
         {profilePictureName && (
           <span className="ml-2 text-sm text-gray-600">
             {profilePictureName}
@@ -935,7 +937,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
                             onClick={handleUploadClick}
                             className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
                           >
-                            <FontAwesomeIcon icon={faCloudUploadAlt} />
+                            <FontAwesomeIcon icon={faUpload} />
                           </button>
                         </div>
                       </div>

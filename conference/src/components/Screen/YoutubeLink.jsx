@@ -706,13 +706,13 @@ const YoutubeLink = () => {
           profilePictureInputRef.current.click()
         }
       >
-        <span className="border-2 border-[#F2911B] text-[#F2911B] rounded-full px-4 py-2 text-base">
+        {/* <span className="border-2 border-[#F2911B] text-[#F2911B] rounded-full px-4 py-2 text-base">
           <FontAwesomeIcon
             className="text-[#F2911B] text-base"
             icon={faUpload}
           />{" "}
           Upload Photo
-        </span>
+        </span> */}
         {profilePictureName && (
           <span className="ml-2 text-sm text-gray-600">
             {profilePictureName}
