@@ -45,9 +45,9 @@ import { TokenContext } from "../../App";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const getEncodedUrl = (content) => encodeURIComponent(content);
-
 const RecordScreen = () => {
-  const token = useContext(TokenContext);
+  // const token = useContext(TokenContext);
+const token = localStorage.getItem("token");
   const history = useHistory();
   useEffect(() => {
     if (!token) {
