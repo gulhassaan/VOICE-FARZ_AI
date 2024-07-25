@@ -199,10 +199,15 @@ const HistoryDetails = () => {
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
       if (generatedPostRef.current) {
-        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
+        generatedPostRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
       }
     }, 100);
   };
+  
 
   const handleCopyContent = (content) => {
     const listener = (e) => {
@@ -250,7 +255,7 @@ const HistoryDetails = () => {
           html: content,
         })
         .then(() => {
-          Swal.fire("Shared!", "The content has been shared.", "success");
+          // Swal.fire("Shared!", "The content has been shared.", "success");
         })
         .catch((err) => {
           console.error("Failed to share:", err);
@@ -318,39 +323,6 @@ const HistoryDetails = () => {
 
   return (
     <div className="container mx-auto px-0">
-      <div className="flex mt-4 flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
-        <div className="flex items-center mb-4 md:mb-0">
-          {/* <h1 className="lg:text-2xl text-sm font-bold">{Username}👋</h1> */}
-          <p
-            className="text-lg font-semibold mt-2 cursor-pointer"
-            onClick={handleDashboardClick}
-          >
-            Dashboard &gt; <span className="text-gray-400">History</span>
-          </p>
-        </div>
-        <div className="relative">
-          <button
-            className="flex items-center justify-center w-12 h-12 bg-[#F2911B] rounded-full"
-            onClick={toggleDropdown}
-          >
-            <span className="text-xl font-bold text-gray-700">
-              {Username.charAt(0).toUpperCase()}
-            </span>
-          </button>
-          {dropdownVisible && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border rounded-2xl shadow-lg">
-              <button
-                className="flex items-center w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 hover:text-[#F2911B]"
-                onClick={handleLogout}
-              >
-                <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className="flex flex-col items-center mt-4 py-10 bg-[#E8ECF4] rounded-2xl">
         <div className="space-y-6 mx-auto w-full max-w-5xl px-0">
           <div className="relative bg-white shadow-md rounded-3xl p-6">
@@ -395,7 +367,8 @@ const HistoryDetails = () => {
             )}
           </div>
 
-          <div className="relative bg-white shadow-md rounded-3xl p-6">
+           <div className="hidden">
+           <div className="relative bg-white shadow-md rounded-3xl p-6">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer`}
               onClick={() => setIsStep2Open(!isStep2Open)}
@@ -443,6 +416,8 @@ const HistoryDetails = () => {
               </>
             )}
           </div>
+           </div>
+        
 
           <div className="relative bg-white shadow-md rounded-3xl p-6">
             <div

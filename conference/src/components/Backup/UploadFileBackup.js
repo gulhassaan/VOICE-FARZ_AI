@@ -95,11 +95,7 @@ const UploadFile = () => {
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
       if (generatedPostRef.current) {
-        generatedPostRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
       }
     }, 100);
   };
@@ -574,8 +570,6 @@ const UploadFile = () => {
       });
       setIsEditingGenerated(true); // Enable editing mode by default for generated content
 
-       // Trigger scroll after setting generated post
-       scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
@@ -905,8 +899,8 @@ toast.success("Copied! The content has been copied to clipboard.", {
             )}
           </div>
         </div>
-  <div className="hidden">
-  <div className="flex items-start">
+  
+        <div className="flex items-start">
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -962,8 +956,6 @@ toast.success("Copied! The content has been copied to clipboard.", {
             )}
           </div>
         </div>
-  </div>
-       
   
         {/* <div className="flex items-start">
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
@@ -1105,7 +1097,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
             {generatedPost && (
               <div
                 className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
-                id={generatedPost.title} ref={generatedPostRef}
+                id={generatedPost.title}
               >
                 {coverImage && (
                   <img

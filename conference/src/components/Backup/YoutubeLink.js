@@ -76,11 +76,7 @@ const YoutubeLink = () => {
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
       if (generatedPostRef.current) {
-        generatedPostRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
       }
     }, 100);
   };
@@ -436,8 +432,7 @@ const YoutubeLink = () => {
         ...prev,
         [title]: generatedContent,
       }));
-          // Trigger scroll after setting generated post
-          scrollToGeneratedPost();
+
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
@@ -803,8 +798,6 @@ const YoutubeLink = () => {
               </div>
             )}
           </div>
-
-          <div className="hidden">
           <div className="flex items-start">
             <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
               <div
@@ -861,8 +854,6 @@ const YoutubeLink = () => {
               )}
             </div>
           </div>
-          </div>
-        
           {/* <div className="flex items-start">
             <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
               <div
@@ -1028,7 +1019,7 @@ const YoutubeLink = () => {
                   </button>
                 </div>
               </div>
-              <div className="p-4  rounded-lg overflow-auto text-sm">
+              <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg overflow-auto text-sm">
                 {coverImage && (
                   <img
                     src={coverImage}
@@ -1049,7 +1040,7 @@ const YoutubeLink = () => {
                     }}
                   />
                 ) : (
-                  <div ref={generatedPostRef}
+                  <div
                     className="prose max-w-none"
                     dangerouslySetInnerHTML={{ __html: generatedContent }}
                   />

@@ -60,62 +60,14 @@ const Dashboard = () => {
     
     return (
         <div>
- <div className="flex mt-4  flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
-            <div className="flex items-center">
-            {/* <h1 className="lg:text-2xl text-sm font-bold">{username}👋</h1> */}
-            <p
-        className="text-lg font-semibold mt-2 cursor-pointer"
-        onClick={handleDashboardClick}
-      >
-        Dashboard 
-      </p>
-            </div>
-            <div className="relative">
-                <button
-                    className="flex items-center justify-center w-12 h-12 bg-[#F2911B] rounded-full"
-                    onClick={toggleDropdown}
-                >
-                    {profilePicture ? (
-                        <img
-                            src={profilePicture}
-                            alt="Profile"
-                            className="w-10 h-10 rounded-full"
-                        />
-                    ) : (
-                        <span className="text-xl font-bold text-gray-700">
-                        {username.charAt(0).toUpperCase()}
-                      </span>
-                      
-                    )}
-                </button>
-                {dropdownVisible && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-2xl shadow-lg">
-                        {/* <button
-                            className="flex items-center w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 hover:text-[#F2911B]"
-                            onClick={() => history.push('/setting')}
-                        >
-                            <FiSettings className="mr-2" />
-                            Settings
-                        </button> */}
-                        <button
-                            className="flex items-center w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 hover:text-[#F2911B]"
-                            onClick={handleLogout}
-                        >
-                            <FiLogOut className="mr-2" />
-                            Logout
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
 
-            <div className="flex flex-col items-center mt-4 p-8 bg-[#E8ECF4] rounded-2xl " style={{height:"82vh"}}>
+            <div className="flex flex-col items-center mt-4 p-8 bg-[#E8ECF4] rounded-2xl " style={{height:"93vh"}}>
                 <img src={DashboardMain} alt="Change Your Speech Into Ideas" className=" hidden lg:block md:block w-1/4 mb-8" />
-                <div className="text-center mb-8">
+                <div className="text-center ">
                     <h2 className="text-xl font-semibold">Amplify Your Reach: </h2>
-                    <p className="text-gray-500 mt-2">Instantly Transform Audio/Video into Social Media Posts using Farz AI Voice Amplified.</p>
+                    <p className="text-gray-500 mt-8">Instantly Transform Audio/Video into Social Media Posts using Farz AI Voice Amplified.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl mt-20">
                     <div 
                         className="flex flex-col items-center p-6 bg-[#1E232C] text-white rounded-3xl cursor-pointer transform transition-transform hover:scale-105 shadow-lg w-full max-w-xs mx-auto"
                         style={{ boxShadow: '10px 10px 0px #f2911b' }}

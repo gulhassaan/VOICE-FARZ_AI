@@ -254,21 +254,22 @@ const Sidebar = () => {
         style={{ height: "101vh" }}
       >
         <div className="flex-1 overflow-y-auto scrollbar-sidebar">
-          <div className="flex space-x-4 items-center justify-between px-6 py-4">
-            <img
-              src={Logo}
-              alt="Farz AI Logo"
-              className="h-8 w-auto cursor-pointer"
-            />
-            <div className="relative">
-              <button
-                onClick={toggleSidebar}
-                className="text-black bg-[#f2911b] rounded-full p-1 focus:outline-none lg:hidden absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2"
-              >
-                <MdOutlineKeyboardDoubleArrowLeft className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+        <div className="flex space-x-4 items-center justify-between lg:justify-center px-6 py-4">
+  <img
+    src={Logo}
+    alt="Farz AI Logo"
+    className="h-8 w-auto cursor-pointer"
+  />
+  <div className="relative">
+    <button
+      onClick={toggleSidebar}
+      className="text-black bg-[#f2911b] rounded-full p-1 focus:outline-none lg:hidden absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2"
+    >
+      <MdOutlineKeyboardDoubleArrowLeft className="h-5 w-5" />
+    </button>
+  </div>
+</div>
+
 
           <div className="px-4 flex items-center justify-between">
             <NavLink
@@ -461,6 +462,45 @@ const Sidebar = () => {
             )}
           </nav>
         </div>
+
+
+
+
+
+        <div className="px-4 py-4 bg-[#1E232C] border-t border-gray-700 flex flex-col space-y-2">
+  <div className="flex items-center space-x-2 border border-gray-600 rounded-full px-4 py-2">
+    {GoogleProfileURL ? (
+      <img
+        src={GoogleProfileURL}
+        alt="Profile"
+        className="h-6 w-6 rounded-full"
+      />
+    ) : (
+      <div className="h-6 w-6 rounded-full bg-[#6A707C] flex items-center justify-center text-sm font-bold text-black">
+        {Username.charAt(0).toUpperCase()}
+      </div>
+    )}
+    <span className="text-white text-sm">{Username}</span>
+  </div>
+  <button
+    onClick={Logout}
+    className="flex items-center space-x-2 border border-gray-600 rounded-full px-4 py-2 text-white text-sm hover:bg-gray-700 transition duration-300"
+  >
+    <div className="bg-[#6A707C] p-2 rounded-full text-black">
+      <FiLogOut className="h-3 w-3" />
+    </div>
+    <span>Logout</span>
+  </button>
+</div>
+
+
+
+
+
+
+
+
+
       </div>
 
       {isOpen && (

@@ -101,20 +101,14 @@ const RecordScreen = () => {
   const profilePictureInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
-  const generatedPostRef = useRef(null)
-
-const scrollToGeneratedPost = () => {
-  setTimeout(() => {
-    if (generatedPostRef.current) {
-      generatedPostRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest",
-      });
-    }
-  }, 100);
-};
-
+  const generatedPostRef = useRef(null);
+  const scrollToGeneratedPost = () => {
+    setTimeout(() => {
+      if (generatedPostRef.current) {
+        generatedPostRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
+  };
 
   let editorInstance = useRef(null);
 
@@ -620,13 +614,10 @@ const scrollToGeneratedPost = () => {
       setGeneratedPost({ title, content: generatedContent, isHtmlContent });
       setIsEditingGenerated(true); // Enable editing mode by default for generated content
 
-
-          // Trigger scroll after setting generated post
-          scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
-      markStepAsCompleted(2);
+      markStepAsCompleted(3);
       setTimeout(() => {
         document.getElementById(`generateBtn${title}`).click();
       }, 400);
@@ -1041,9 +1032,7 @@ const scrollToGeneratedPost = () => {
             </div>
           </div>
 
-
-<div className="hidden">
-<div className="flex items-start ">
+          <div className="flex items-start">
             <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
               <div
                 className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -1099,8 +1088,6 @@ const scrollToGeneratedPost = () => {
               )}
             </div>
           </div>
-</div>
-        
 
           {/* 
           <div className="flex items-start">
@@ -1246,7 +1233,7 @@ const scrollToGeneratedPost = () => {
           </div>
 
           {generatedPost && (
-            <div className="flex flex-col mt-8" id={generatedPost.title} ref={generatedPostRef}>
+            <div className="flex flex-col mt-8" id={generatedPost.title}>
               <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
                 <div className="flex items-center justify-between mb-4">
                   <p className="font-bold text-lg">
