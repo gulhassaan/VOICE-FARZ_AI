@@ -5,6 +5,7 @@ import { FiSettings, FiLogOut } from "react-icons/fi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleDown,
+  faEdit,faSave,
   faAngleUp,
   faTimes,
   faCopy,
@@ -73,6 +74,8 @@ const YoutubeLink = () => {
   const token = localStorage.getItem("token");
   const editorInstance = useRef(null);
   const generatedPostRef = useRef(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
       if (generatedPostRef.current) {
@@ -86,6 +89,7 @@ const YoutubeLink = () => {
   };
 
   const [currentTitle, setCurrentTitle] = useState(""); // Added state for currentTitle
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true); // State for managing submit button
 
   useEffect(() => {
     if (!token) {
@@ -159,6 +163,7 @@ const YoutubeLink = () => {
     const newLinks = [...youtubeLinks];
     newLinks[index] = event.target.value;
     setYoutubeLinks(newLinks);
+    setIsSubmitDisabled(newLinks.every(link => link === "")); // Enable submit button if any link is not empty
   };
 
   const handleAddYouTubeLink = () => {
@@ -166,8 +171,10 @@ const YoutubeLink = () => {
   };
 
   const handleRemoveYouTubeLink = (index) => {
-    const newLinks = youtubeLinks.filter((_, i) => i !== index);
-    setYoutubeLinks(newLinks);
+    if (index !== 0) { // Prevent removal of the first link
+      const newLinks = youtubeLinks.filter((_, i) => i !== index);
+      setYoutubeLinks(newLinks);
+    }
   };
 
   const markStepAsCompleted = (stepIndex) => {
@@ -258,6 +265,15 @@ const YoutubeLink = () => {
       Swal.close();
       markStepAsCompleted(0);
       markStepAsCompleted(1);
+      setIsSubmitDisabled(true); // Disable submit button after successful submission
+    
+    
+    // Trigger animation
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 2000); // Duration of the animation
+
     } catch (error) {
       console.error("Error in transcription:", error);
       if (error.response) {
@@ -412,7 +428,7 @@ const YoutubeLink = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        "Meeting Notes": "meeting_notes",
+        "Notes": "meeting_notes",
         Blog: "blog_post",
         eBook: "ebook",
         Facebook: "facebook_post",
@@ -574,7 +590,7 @@ const YoutubeLink = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "Meeting Notes",
+      title: "Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
       url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
@@ -775,12 +791,14 @@ const YoutubeLink = () => {
                           placeholder="Enter YouTube link"
                         />
                         <div className="flex space-x-3 px-6">
-                          <button
-                            className="text-white border p-2 border-[#6A707C] bg-[#6A707C] rounded-full h-10 w-10 flex items-center justify-center"
-                            onClick={() => handleRemoveYouTubeLink(index)}
-                          >
-                            <FontAwesomeIcon icon={faMinus} />
-                          </button>
+                          {index !== 0 && (
+                            <button
+                              className="text-white border p-2 border-[#6A707C] bg-[#6A707C] rounded-full h-10 w-10 flex items-center justify-center"
+                              onClick={() => handleRemoveYouTubeLink(index)}
+                            >
+                              <FontAwesomeIcon icon={faMinus} />
+                            </button>
+                          )}
                           <button
                             className="text-white border p-2 bg-[#F2911B] rounded-full h-10 w-10 flex items-center justify-center"
                             onClick={handleAddYouTubeLink}
@@ -793,7 +811,8 @@ const YoutubeLink = () => {
                     <div className="flex flex-col justify-center sm:flex-row sm:space-x-4 w-full mt-4">
                       <button
                         onClick={handleUploadClick}
-                        className="bg-[#F2911B] text-white px-6 py-2 rounded-3xl"
+                        className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
+                        disabled={isSubmitDisabled}
                       >
                         Submit
                       </button>
@@ -925,7 +944,8 @@ const YoutubeLink = () => {
               )}
             </div>
           </div> */}
-          <div className="relative bg-white shadow-md rounded-3xl p-6">
+        <div className={`relative bg-white shadow-md rounded-3xl p-6 ${isAnimating ? "animate-zoomIn" : ""}`}>
+     
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
                 isGenerateOpen ? "bg-transparent" : ""
@@ -935,10 +955,10 @@ const YoutubeLink = () => {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                    3
+                    1
                   )}`}
                 >
-                  4
+                  2
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -996,84 +1016,93 @@ const YoutubeLink = () => {
               </div>
             )}
           </div>
-        </div>
+       
         <div className="flex flex-col mt-8">
-          {generatedContent && (
-            <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
-              <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated {currentTitle}</p>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleCopyNewlyGeneratedContent}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faCopy} className="text-white" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDownloadHtmlContent(currentTitle, generatedContent)
-                    }
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faDownload} className="text-white" />
-                  </button>
+  {generatedContent && (
+    <div
+      className={`relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden ${
+        currentTitle === "Notes" ? "w-full" : "w-full max-w-5xl"
+      }`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-bold text-lg">Generated {currentTitle}</p>
+        <div className="flex items-center space-x-2">
+        {isEditing && (
+          <button
+            onClick={handleSaveText}
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+          >
+                                   <FontAwesomeIcon icon={faSave} className="text-white" />
 
-                  <button
-                    onClick={() =>
-                      handleShareContent(currentTitle, generatedContent)
-                    }
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-                  >
-                    <FontAwesomeIcon icon={faShareAlt} className="text-white" />
-                  </button>
-                </div>
-              </div>
-              <div className="p-4  rounded-lg overflow-auto text-sm">
-                {coverImage && (
-                  <img
-                    src={coverImage}
-                    alt="Cover"
-                    className="h-48 w-full object-cover rounded-lg mb-4"
-                  />
-                )}
-                {isEditing ? (
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={generatedContent}
-                    onReady={(editor) => {
-                      editorInstance.current = editor;
-                    }}
-                    onChange={(event, editor) => {
-                      const data = editor.getData();
-                      setGeneratedContent(data);
-                    }}
-                  />
-                ) : (
-                  <div ref={generatedPostRef}
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedContent }}
-                  />
-                )}
-                {isEditing && (
-                  <button
-                    onClick={handleSaveText}
-                    className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                  >
-                    Save
-                  </button>
-                )}
-                {!isEditing && (
-                  <button
-                    onClick={handleEditToggle}
-                    className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+          </button>
+        )}
+        {!isEditing && (
+          <button
+            onClick={handleEditToggle}
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+          >
+                       <FontAwesomeIcon icon={faEdit} className="text-white" />
+
+          </button>
+        )}
+          <button
+            onClick={handleCopyNewlyGeneratedContent}
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+          >
+            <FontAwesomeIcon icon={faCopy} className="text-white" />
+          </button>
+          <button
+            onClick={() =>
+              handleDownloadHtmlContent(currentTitle, generatedContent)
+            }
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+          >
+            <FontAwesomeIcon icon={faDownload} className="text-white" />
+          </button>
+
+          <button
+            onClick={() =>
+              handleShareContent(currentTitle, generatedContent)
+            }
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+          >
+            <FontAwesomeIcon icon={faShareAlt} className="text-white" />
+          </button>
         </div>
+      </div>
+      <div className="p-4 rounded-lg overflow-auto text-sm">
+        {coverImage && (
+          <img
+            src={coverImage}
+            alt="Cover"
+            className="h-48 w-full object-cover rounded-lg mb-4"
+          />
+        )}
+        {isEditing ? (
+          <CKEditor
+            editor={ClassicEditor}
+            data={generatedContent}
+            onReady={(editor) => {
+              editorInstance.current = editor;
+            }}
+            onChange={(event, editor) => {
+              const data = editor.getData();
+              setGeneratedContent(data);
+            }}
+          />
+        ) : (
+          <div
+            ref={generatedPostRef}
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: generatedContent }}
+          />
+        )}
+       
+      </div>
+    </div>
+  )}
+</div>
+</div>
       </div>
     </div>
   );

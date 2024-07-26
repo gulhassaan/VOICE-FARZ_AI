@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useHistory, NavLink } from "react-router-dom";
-import {
-  FiMenu,
-  FiEdit,
-  FiTrash2,
-  FiLogOut,
-  FiSearch,
-  FiMessageSquare,
-} from "react-icons/fi";
+import { FiMenu, FiEdit, FiTrash2, FiSearch, FiMessageSquare } from "react-icons/fi";
 import { MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
 import { BsChatSquareDots } from "react-icons/bs";
+import { RiMagicLine } from 'react-icons/ri'; 
+import { AiOutlineQuestionCircle , AiOutlineLogout , AiOutlineSetting ,AiOutlineClose  } from 'react-icons/ai'; 
+import { CiUser } from "react-icons/ci";
 import axios from "axios";
 import Logo from "../../Assets/images/logo.png";
 import moment from "moment";
@@ -190,6 +186,9 @@ const Sidebar = () => {
       );
     }
   };
+  const handleCloseDropdown = () => {
+    setIsDropdownVisible(false);
+  };
 
   const truncateTitle = (title, maxLength) => {
     return title.length > maxLength
@@ -231,6 +230,15 @@ const Sidebar = () => {
   const { today, yesterday, previousWeek, pastHistory } =
     categorizeHistory(filteredTitles);
 
+  const handleUpgradePlan = () => {
+    // Handle upgrade plan logic here
+    history.push("/price")
+  };
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
   return (
     <>
       <div className="lg:hidden fixed top-0 left-0 w-full z-50 bg-transparent p-4 bg-white  ">
@@ -466,32 +474,64 @@ const Sidebar = () => {
 
 
 
-
-        <div className="px-4 py-4 bg-[#1E232C] border-t border-gray-700 flex flex-col space-y-2">
-  <div className="flex items-center space-x-2 border border-gray-600 rounded-full px-4 py-2">
-    {GoogleProfileURL ? (
-      <img
-        src={GoogleProfileURL}
-        alt="Profile"
-        className="h-6 w-6 rounded-full"
-      />
-    ) : (
-      <div className="h-6 w-6 rounded-full bg-[#6A707C] flex items-center justify-center text-sm font-bold text-black">
-        {Username.charAt(0).toUpperCase()}
+        <div className="relative px-4 mb-2">
+      <div
+        onClick={toggleDropdown}
+        className="flex items-center space-x-2 border border-gray-600 rounded-full px-4 py-2 hover:bg-gray-700 cursor-pointer"
+      >
+        {GoogleProfileURL ? (
+          <img
+            src={GoogleProfileURL}
+            alt="Profile"
+            className="h-7 w-7 rounded-full"
+          />
+        ) : (
+          <div className="h-7 w-7 rounded-full bg-[#6A707C] flex items-center justify-center text-sm font-bold text-black">
+            {Username.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span className="text-white text-sm">{Username}</span>
       </div>
-    )}
-    <span className="text-white text-sm">{Username}</span>
-  </div>
-  <button
-    onClick={Logout}
-    className="flex items-center space-x-2 border border-gray-600 rounded-full px-4 py-2 text-white text-sm hover:bg-gray-700 transition duration-300"
-  >
-    <div className="bg-[#6A707C] p-2 rounded-full text-black">
-      <FiLogOut className="h-3 w-3" />
+      {isDropdownVisible && (
+        <div className="absolute right-2 bottom-24 w-40 bg-[#E8ECF4] border-t border-gray-700 rounded-xl flex flex-col space-y-2 z-10">
+          <div className="flex justify-between items-center px-4 py-2">
+            <div className="flex items-center text-black cursor-pointer hover:bg-white" onClick={() => history.push('/setting')}>
+              <CiUser className="mr-2" />
+              <span>Account</span>
+            </div>
+            <AiOutlineClose
+              className="text-black cursor-pointer hover:bg-gray-700 hover:text-white"
+              onClick={handleCloseDropdown}
+            />
+          </div>
+          <div className="px-4 py-2 text-black cursor-pointer hover:bg-white flex items-center" onClick={() => history.push('/setting')}>
+            <AiOutlineSetting className="mr-2" />
+            <span>Options</span>
+          </div>
+          <div className="px-4 py-2 text-black cursor-pointer hover:bg-white flex items-center" onClick={Logout}>
+            <AiOutlineLogout className="mr-2" />
+            <span>Log Out</span>
+          </div>
+        </div>
+      )}
+
+<button
+  onClick={handleUpgradePlan}
+  className="flex items-center w-full border border-orange-400 rounded-full px-4 py-2 text-white text-sm hover:bg-gray-700 transition duration-300 mt-2"
+>
+  <div className="flex items-center space-x-2 w-4/5">
+    <div className="bg-[#1E232C] p-1 rounded-full text-orange-400">
+      <RiMagicLine className="h-5 w-5" />
     </div>
-    <span>Logout</span>
-  </button>
-</div>
+    <span>Upgrade Plan</span>
+  </div>
+  <div className="flex justify-center items-center w-1/5">
+    <AiOutlineQuestionCircle className="text-gray-400 h-7 w-7" />
+  </div>
+</button>
+
+
+    </div>
 
 
 
@@ -499,13 +539,12 @@ const Sidebar = () => {
 
 
 
-
-
+        
       </div>
 
       {isOpen && (
         <div
-          className="absolute inset-0 bg-slate-900/25 backdrop-blur-sm transition-opacity opacity-100 z-10"
+          className="absolute inset-0  opacity-100 z-10"
           onClick={() => setIsOpen(!isOpen)}
         >
           {" "}

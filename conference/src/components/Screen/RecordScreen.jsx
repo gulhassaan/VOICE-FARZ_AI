@@ -61,6 +61,7 @@ const token = localStorage.getItem("token");
       });
     }
   }, [history]);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
   const currentUrl = window.location.href;
   const [files, setFiles] = useState([]);
@@ -102,6 +103,7 @@ const token = localStorage.getItem("token");
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
   const generatedPostRef = useRef(null)
+  const [isAnimating, setIsAnimating] = useState(false);
 
 const scrollToGeneratedPost = () => {
   setTimeout(() => {
@@ -273,35 +275,37 @@ const scrollToGeneratedPost = () => {
   /**For Audio Start */
   const handleStart = () => {
     if (!isRecording) {
-      setIsRecording(true);
-      setIsPaused(false);
-      setTime(0);
-      intervalRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 1000);
-
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
+          setIsRecording(true);
+          setIsPaused(false);
+          setTime(0);
+          intervalRef.current = setInterval(() => {
+            setTime((prevTime) => prevTime + 1);
+          }, 1000);
+  
           const newMediaRecorder = new MediaRecorder(stream);
           setMediaRecorder(newMediaRecorder);
-
+  
           newMediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
               setAudioChunks((prevChunks) => [...prevChunks, event.data]);
             }
           };
-
+  
           newMediaRecorder.start();
         })
         .catch((error) => {
           console.error("Error accessing media devices.", error);
           alert(
-            "Error accessing microphone. Please ensure the microphone is available."
+            "Error accessing microphone. Please ensure the microphone is available and permission is granted."
           );
         });
     }
   };
+  
+  
   /**For Audio Pause */
   const handlePause = () => {
     if (isRecording && !isPaused) {
@@ -361,12 +365,15 @@ const scrollToGeneratedPost = () => {
         audioRef.current.src = "";
       }
     }
-
+  
     // Reset time and other states
     setTime(0);
     setFiles([]);
     setDummyState((prev) => !prev);
+    setIsSubmitDisabled(false); // Enable the submit button when reset
+    setAudioChunks([]); // Clear audio chunks
   };
+  
   /**For Audio Upload */
   const handleUploadClick = async () => {
     if (!token) {
@@ -374,7 +381,7 @@ const scrollToGeneratedPost = () => {
       alert("Please login to perform this action.");
       return;
     }
-
+  
     let formData = new FormData();
     if (profilePictureUrl) {
       formData.append("profile_picture", profilePictureUrl);
@@ -386,15 +393,13 @@ const scrollToGeneratedPost = () => {
       formData.append("file", audioBlob, "recording.wav");
     } else {
       console.error("No files or audio chunks to upload.");
-      // Success toast for copied content
       toast.error("No files or audio chunks to upload.", {
         position: "top-right",
         autoClose: 5000,
       });
-
       return;
     }
-
+  
     try {
       const customLoader = `
         <div class="relative flex items-center justify-center overflow-hidden mt-4">
@@ -405,7 +410,7 @@ const scrollToGeneratedPost = () => {
           </div>
         </div>
       `;
-
+  
       const customHeader = `
         <div class="flex justify-between items-center w-full">
           <div class="text-lg">Processing Your Recording</div>
@@ -416,11 +421,9 @@ const scrollToGeneratedPost = () => {
           </button>
         </div>
         <hr class="border-gray-300 w-full my-2">
-     <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
-
-
+        <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
       `;
-
+  
       Swal.fire({
         html: `
           ${customHeader}
@@ -440,7 +443,7 @@ const scrollToGeneratedPost = () => {
             .addEventListener("click", () => Swal.close());
         },
       });
-
+  
       const response = await axios.post(
         "https://speechinsightsweb.azurewebsites.net/transcribe/",
         formData,
@@ -451,12 +454,19 @@ const scrollToGeneratedPost = () => {
           },
         }
       );
-
+  
       setTranscript(response.data.SpeechThread.text);
       setSpeechThreadId(response.data.SpeechThread.id);
-
+  
       Swal.close();
       markStepAsCompleted(0);
+      setIsSubmitDisabled(true);  // Disable the submit button after successful processing
+  
+      // Trigger animation
+      setIsAnimating(true);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 2000); // Duration of the animation
     } catch (error) {
       console.error("Error in transcription:", error);
       if (error.response) {
@@ -474,6 +484,8 @@ const scrollToGeneratedPost = () => {
     }
     setIsLiveRecordOpen(!isLiveRecordOpen);
   };
+  
+  
 
   const handleDashboardClick = () => {
     history.push("/dashboard");
@@ -525,7 +537,7 @@ const scrollToGeneratedPost = () => {
       );
       return;
     }
-    const isHtmlContent = ["Summary", "eBook", "Blog", "White Paper"].includes(
+    const isHtmlContent = ["Summary", "eBook", "Blog", "Notes"].includes(
       title
     );
 
@@ -598,7 +610,7 @@ const scrollToGeneratedPost = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        "Meeting Notes": "meeting_notes",
+        "Notes": "meeting_notes",
         Blog: "blog_post",
         eBook: "ebook",
         Facebook: "facebook_post",
@@ -754,7 +766,7 @@ const scrollToGeneratedPost = () => {
       speechThreadId: speechThreadId,
     },
     {
-      title: "Meeting Notes",
+      title: "Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
       url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
@@ -992,15 +1004,18 @@ const scrollToGeneratedPost = () => {
                           )}
                         </div>
                         {audioChunks.length > 0 && (
-                          <div className="mt-4">
-                            <button
-                              onClick={handleUploadClick}
-                              className="px-4 py-2 bg-[#F2911B] text-white rounded-full shadow-lg"
-                            >
-                              Submit
-                            </button>
-                          </div>
-                        )}
+  <div className="mt-4 pt-8">
+    <button
+      onClick={handleUploadClick}
+      className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
+      disabled={isSubmitDisabled}  // Disable the button based on the state
+    >
+      Submit
+    </button>
+  </div>
+)}
+
+
                       </div>
                     </div>
 
@@ -1010,14 +1025,14 @@ const scrollToGeneratedPost = () => {
                       className="mt-4 w-full hidden"
                     ></audio>
                   </div>
-                  <div className="flex flex-col items-center w-full ">
+                  <div className="flex flex-col items-center w-full">
                     <input
                       type="file"
                       ref={inputRef}
                       className="hidden"
                       onChange={handleFileChange}
                     />
-                    <div className="flex flex-wrap  space-x-2 w-full">
+                    <div className="flex flex-wrap  space-x-2 w-full ">
                       {files.map((file, index) => (
                         <div
                           key={index}
@@ -1078,23 +1093,7 @@ const scrollToGeneratedPost = () => {
                       {transcript}
                     </div>
                   )}
-                  <div className="flex justify-center">
-                    {isEditing ? (
-                      <button
-                        onClick={handleSaveText}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleEditToggle}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                
                 </div>
               )}
             </div>
@@ -1166,7 +1165,7 @@ const scrollToGeneratedPost = () => {
             </div>
           </div> */}
 
-          <div className="flex items-start">
+<div className={`flex items-start ${isAnimating ? "animate-zoomIn" : ""}`}>
             <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
               <div
                 className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -1177,10 +1176,10 @@ const scrollToGeneratedPost = () => {
                 <div className="flex items-center space-x-2">
                   <span
                     className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                      3
+                      1
                     )}`}
                   >
-                    3
+                    2
                   </span>
                   <p className="font-bold text-lg">Generate</p>
                 </div>
@@ -1254,6 +1253,22 @@ const scrollToGeneratedPost = () => {
                     Generated {generatedPost.title}
                   </p>
                   <div className="flex items-center space-x-2">
+                    {isEditing ? (
+                      <button
+                        onClick={handleSaveText}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      >
+                     <FontAwesomeIcon icon={faSave} className="text-white" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggle}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      >
+                          <FontAwesomeIcon icon={faEdit} className="text-white" />
+                      </button>
+                    )}
+              
                     <button
                       onClick={() => handleCopyContent(generatedPost.content)}
                       className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
@@ -1333,23 +1348,7 @@ const scrollToGeneratedPost = () => {
                       </div>
                     </>
                   )}
-                  <div className="flex justify-center mt-4">
-                    {isEditingGenerated ? (
-                      <button
-                        onClick={handleSaveGeneratedText}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleEditToggleGenerated}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                 
                 </div>
               </div>
             </div>

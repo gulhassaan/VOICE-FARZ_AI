@@ -57,7 +57,8 @@ const UploadFile = () => {
         });
     }
   }, [history]);
-
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
   const currentUrl = window.location.href;
   const [files, setFiles] = useState([]);
   const [isLiveRecordOpen, setIsLiveRecordOpen] = useState(true);
@@ -245,6 +246,7 @@ const UploadFile = () => {
     }
   
     setFiles([...files, ...validFiles]);
+    setIsSubmitDisabled(validFiles.length === 0); // Enable submit button if valid files are present
   };
 
   const handleFileRemove = (index) => {
@@ -343,6 +345,13 @@ const UploadFile = () => {
 
       Swal.close();
       markStepAsCompleted(0); // Mark Step 1 as completed
+      setIsSubmitDisabled(true);  // Disable the submit button after successful processing
+
+      setIsAnimating(true);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 2000); // Duration of the animation
+
     } catch (error) {
       console.error("Error in transcription:", error);
       if (error.response) {
@@ -474,7 +483,7 @@ const UploadFile = () => {
       );
       return;
     }
-    const isHtmlContent = ["Summary", "eBook", "Blog", "Meeting Notes"].includes(
+    const isHtmlContent = ["Summary", "eBook", "Blog", "Notes"].includes(
       title
     );
 
@@ -548,7 +557,7 @@ const UploadFile = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        "Meeting Notes": "meeting_notes", 
+        "Notes": "meeting_notes", 
         Blog: "blog_post",
         eBook: "ebook",
         Facebook: "facebook_post",
@@ -705,7 +714,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
       speechThreadId: speechThreadId,
     },
     {
-      title: "Meeting Notes",
+      title: "Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
       url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
@@ -889,16 +898,18 @@ toast.success("Copied! The content has been copied to clipboard.", {
                       onClick={() =>
                         inputRef.current && inputRef.current.click()
                       }
-                      className="text-[#F2911B] px-4 py-2 rounded-3xl border-solid border-2 border-[#F2911B] w-full lg:w-auto"
+                      className="text-white px-4 py-2 rounded-3xl bg-[#F2911B] w-full lg:w-auto"
                     >
                       Add Files
                     </button>
                     <button
-                      onClick={handleUploadClick}
-                      className="bg-[#F2911B] text-white px-6 py-2 rounded-3xl w-full lg:w-auto"
-                    >
-                      Submit
-                    </button>
+  onClick={handleUploadClick}
+  className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
+  disabled={isSubmitDisabled}  // Disable the button based on the state
+>
+  Submit
+</button>
+
                   </div>
                 </div>
               </div>
@@ -1025,7 +1036,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
           </div>
         </div> */}
   
-        <div className="flex items-start">
+  <div className={`flex items-start ${isAnimating ? "animate-zoomIn" : ""}`}>
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -1036,10 +1047,10 @@ toast.success("Copied! The content has been copied to clipboard.", {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                    3
+                   1
                   )}`}
                 >
-                  4
+                  2
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -1119,6 +1130,25 @@ toast.success("Copied! The content has been copied to clipboard.", {
                     Generated {generatedPost.title}{" "}
                   </p>
                   <div className="flex items-center space-x-2">
+        
+                    {isEditingGenerated ? (
+                      <button
+                        onClick={handleSaveGeneratedText}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      >
+                                           <FontAwesomeIcon icon={faSave} className="text-white" />
+
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggleGenerated}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      >
+                                             <FontAwesomeIcon icon={faEdit} className="text-white" />
+
+                      </button>
+                    )}
+                
                     <button
                       onClick={() => handleCopyContent(generatedPost.content)}
                       className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
@@ -1180,23 +1210,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
                       {stripHtmlTags(generatedPost.content)}
                     </div>
                   )}
-                  <div className="flex justify-center mt-4">
-                    {isEditingGenerated ? (
-                      <button
-                        onClick={handleSaveGeneratedText}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleEditToggleGenerated}
-                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                 
                 </div>
               </div>
             )}

@@ -13,6 +13,8 @@ import UploadFile from './components/Screen/UploadFile.jsx';
 import YouTubeLink from './components/Screen/YoutubeLink.jsx';
 import HistoryDetails from './components/History/HistoryDetails.jsx';
 import Setting from './components/Data/UserProfile.jsx'
+import PricingTable from './components/Expo/Pricing.jsx';
+import Contact from './components/Expo/Contact.jsx';
 import './index.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,6 +33,9 @@ function App() {
                 <Route path="/otp-verification" component={OtpVerification} />
                 <Route path="/forgot-password" component={ForgotPassword} />
                 <Route path="/new-password" component={NewPassword} />
+                <Route path="/price" component={PricingTable} />
+                <Route path="/contact" component={Contact} />
+           
 
                 {/**Routing that take Sidebar with itself  Start */}
                 <Route path="/dashboard">
