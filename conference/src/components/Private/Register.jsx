@@ -17,6 +17,7 @@ const Register = () => {
         confirmPassword: ''
     });
     const [loader, setLoader] = useState(false);
+    const [googleLoader, setGoogleLoader] = useState(false); // Added state for Google loader
     const [googleLink, setGoogleLink] = useState('');
     const history = useHistory();
     const location = useLocation();
@@ -58,22 +59,26 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoader(true); // Show spinner on form submission
 
         // Form validation
         if (formData.username === formData.password) {
             toast.error('Username and password cannot be the same');
+            setLoader(false); // Hide spinner if validation fails
             return; // Exit the function if validation fails
         }
 
         if (!validatePassword(formData.password)) {
+            setLoader(false); // Hide spinner if validation fails
             return;
         }
         if (formData.password !== formData.confirmPassword) {
             toast.error('Passwords do not match');
+            setLoader(false); // Hide spinner if validation fails
             return;
         }
         try {
-            const response = await axios.post('https://speechinsightsweb.azurewebsites.net/signup/', {
+            const response = await axios.post('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/signup/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password
@@ -86,16 +91,18 @@ const Register = () => {
             });
             toast.success('Signup successful! Redirecting to OTP verification...');
             setTimeout(() => {
+                setLoader(false); // Hide spinner before navigation
                 history.push('/otp-verification', { email: formData.email }); 
             }, 2000); 
         } catch (error) {
             console.error('Error:', error.response ? error.response.data : error.message);
             toast.error(error.response?.data?.error || 'An error occurred');
+            setLoader(false); // Hide spinner on error
         }
     };
 
     const getGoogleLink = () => {
-        axios.get('https://speechinsightsweb.azurewebsites.net/googleredirect/')
+        axios.get('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/googleredirect/')
             .then((res) => {
                 setGoogleLink(res.data.url);
             })
@@ -115,9 +122,9 @@ const Register = () => {
         console.log('Extracted Error:', error);
 
         if (code && state) {
-            setLoader(true);
+            setGoogleLoader(true); // Show spinner for Google login
             try {
-                const response = await axios.get(`https://speechinsightsweb.azurewebsites.net/googlecallback/?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`, {
+                const response = await axios.get(`https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/googlecallback/?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`, {
                     headers: {
                         'accept': 'application/json'
                     }
@@ -130,11 +137,11 @@ const Register = () => {
                 localStorage.setItem('GoogleProfileURL', user_info.google_picture_url);
                 localStorage.setItem("token", token);
                 toast.success('Login successful! Redirecting to dashboard...');
-                setLoader(false);
+                setGoogleLoader(false);
                 history.push('/dashboard');
             } catch (err) {
                 console.error('Error during Google callback:', err.response ? err.response.data : err.message);
-                setLoader(false);
+                setGoogleLoader(false);
             }
         } else if (error) {
             console.error('Error fetching Google link:', error);
@@ -247,27 +254,39 @@ const Register = () => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full py-4 font-bold text-white bg-[#F2911B] rounded focus:ring-4 focus:ring-[#F2911B]"
+                        className="w-full py-4 font-bold text-white bg-[#F2911B] rounded focus:ring-4 focus:ring-[#F2911B] flex justify-center items-center"
                     >
-                        Register
+                        {loader ? (
+                            <div className="w-7 h-7 border-4 border-t-4 border-t-transparent border-white rounded-full animate-spin"></div>
+                        ) : 'Register'}
                     </button>
                     <div className="flex items-center justify-center space-x-4">
                         <div className="border-t w-24"></div>
                         <span className='text-[#F2911B]'>Or Register with</span>
                         <div className="border-t w-24"></div>
                     </div>
-                    <div className="flex items-center justify-center space-x-4">
-                        <a href={googleLink} className="flex items-center justify-center w-1/2 px-4 py-2 border rounded">
-                            <img src={Google} alt="Google" className="h-5 mr-2" />
-                            Google
+                    <div className="flex items-center justify-center space-x-4 bg-[#f4f4f4]">
+                        <a
+                            href={googleLink}
+                            className="flex items-center justify-center w-full px-4 py-3 border rounded hover:bg-gray-200"
+                            onClick={() => setGoogleLoader(true)}
+                        >
+                            {googleLoader ? (
+                                <div className="w-7 h-7 border-4 border-t-4 border-t-transparent border-gray-600 rounded-full animate-spin"></div>
+                            ) : (
+                                <>
+                                    <img src={Google} alt="Google" className="h-5 mr-2" />
+                                    Google
+                                </>
+                            )}
                         </a>
-                        <button 
+                        {/* <button 
                             type="button"
                             className="flex items-center justify-center w-1/2 px-4 py-2 border rounded"
                         >
                             <img src={Apple} alt="Apple" className="h-5 mr-2" />
                             Apple
-                        </button>
+                        </button> */}
                     </div>
                 </form>
                 <p className="text-center">

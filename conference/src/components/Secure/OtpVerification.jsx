@@ -34,7 +34,7 @@ const OtpVerification = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://speechinsightsweb.azurewebsites.net/verify_email/', {
+            const response = await axios.post('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/verify_email/', {
                 email: email,
                 otp: otp.join('')
             }, {

@@ -107,7 +107,7 @@ const YoutubeLink = () => {
       console.error("No token found. Please login first.");
     } else {
       axios
-        .get("https://speechinsightsweb.azurewebsites.net/profile_picture/", {
+        .get("https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/", {
           headers: {
             Authorization: "Bearer " + token,
           },
@@ -133,7 +133,7 @@ const YoutubeLink = () => {
 
         axios
           .post(
-            "https://speechinsightsweb.azurewebsites.net/profile_picture/",
+            "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/",
             formData,
             {
               headers: {
@@ -249,7 +249,7 @@ const YoutubeLink = () => {
       });
 
       const response = await axios.post(
-        "https://speechinsightsweb.azurewebsites.net/transcribe/",
+        "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/transcribe/",
         formData,
         {
           headers: {
@@ -290,71 +290,33 @@ const YoutubeLink = () => {
     setIsYouTubeLinkOpen(!isYouTubeLinkOpen);
   };
 
-  const handleCopyNewlyGeneratedContent = () => {
-    let contentElement = document.querySelector(
-      "#editor-container .ck-editor__main .ck-content"
-    );
-
-    if (!contentElement && editorInstance.current) {
-      contentElement = editorInstance.current.ui.view.editable.element;
-    }
-
-    if (contentElement) {
-      const content =
-        contentElement.innerText ||
-        contentElement.textContent ||
-        contentElement.innerHTML;
-      navigator.clipboard
-        .writeText(content)
-        .then(() => {
-          toast.success("Copied! The content has been copied to clipboard.", {
-            position: "top-right",
-            autoClose: 5000,
-          });
-        })
-        .catch((err) => {
-          console.error("Failed to copy:", err);
-        });
-    } else {
-      console.error("No content to copy.");
-    }
+  const handleCopyContent = (content) => {
+    const listener = (e) => {
+      e.clipboardData.setData("text/html", content);
+      e.clipboardData.setData("text/plain", stripHtmlTags(content));
+      e.preventDefault();
+    };
+    document.addEventListener("copy", listener);
+    document.execCommand("copy");
+    document.removeEventListener("copy", listener);
+    toast.success("Copied! The content has been copied to clipboard.", {
+      position: "top-right", 
+      autoClose: 5000,       
+    });
+    
   };
 
-  const handleCopyTranscriptContent = () => {
-    const contentElement = isEditing
-      ? document.querySelector("textarea")
-      : document.querySelector(".transcript-content");
-    if (contentElement) {
-      const content = contentElement.value || contentElement.textContent;
-      navigator.clipboard
-        .writeText(content)
-        .then(() => {
-          toast.success("Copied! The content has been copied to clipboard.", {
-            position: "top-right",
-            autoClose: 5000,
-          });
-        })
-        .catch((err) => {
-          console.error("Failed to copy: ", err);
-        });
-    } else {
-      console.error("No content to copy.");
-    }
-  };
 
-  const handleGenerateContent = async (
-    url,
-    text,
-    speechThreadId,
-    index,
-    title
-  ) => {
+
+  const handleGenerateContent = async (url, text, speechThreadId, index, title) => {
+    const token = localStorage.getItem("token");
+  
     if (!token) {
       console.error("No token found. Please login first.");
       alert("Please login to perform this action.");
       return;
     }
-
+  
     if (!speechThreadId) {
       Swal.fire(
         "Error",
@@ -363,13 +325,13 @@ const YoutubeLink = () => {
       );
       return;
     }
-
+  
     if (savedGeneratedPosts[title]) {
       setGeneratedContent(savedGeneratedPosts[title]);
       setCurrentTitle(title);
       return;
     }
-
+  
     try {
       const customLoader = `
         <div class="relative flex items-center justify-center overflow-hidden mt-4">
@@ -380,7 +342,7 @@ const YoutubeLink = () => {
           </div>
         </div>
       `;
-
+  
       const customHeader = `
         <div class="flex justify-between items-center w-full">
           <div class="text-lg">Generating ${title} Post</div>
@@ -393,7 +355,7 @@ const YoutubeLink = () => {
         <hr class="border-gray-300 w-full my-2">
         <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
       `;
-
+  
       Swal.fire({
         html: `
           ${customHeader}
@@ -413,52 +375,53 @@ const YoutubeLink = () => {
             .addEventListener("click", () => Swal.close());
         },
       });
-
+  
       const formData = new FormData();
       formData.append("text", text);
       formData.append("SpeechThread_id", speechThreadId);
-
+  
       const response = await axios.post(url, formData, {
         headers: {
           Authorization: "Bearer " + token,
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        "Notes": "meeting_notes",
+        Notes: "meeting_notes",
         Blog: "blog_post",
         eBook: "ebook",
         Facebook: "facebook_post",
         Twitter: "twitter_post",
         LinkedIn: "linkedin_post",
       };
-
+  
       const contentKey = contentKeyMap[title];
       if (!response.data || !response.data[contentKey]) {
         throw new Error(
           `Invalid response structure. Expected key '${contentKey}' not found.`
         );
       }
-
+  
       const generatedContent = response.data[contentKey];
       setGeneratedContent(generatedContent);
       setCurrentTitle(title);
       setIsEditing(false); // Enable editing mode by default for generated content
-
+  
       setSavedGeneratedPosts((prev) => ({
         ...prev,
         [title]: generatedContent,
       }));
-          // Trigger scroll after setting generated post
-          scrollToGeneratedPost();
+  
+      // Trigger scroll after setting generated post
+      scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
       markStepAsCompleted(3);
-
+  
       Swal.close(); // Close the Swal alert here after generation is complete
     } catch (error) {
       console.error("Error in generating content:", error);
@@ -480,87 +443,72 @@ const YoutubeLink = () => {
       }
     }
   };
+  
+  
+  
 
-  const handleCoverImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImage(reader.result);
-        markStepAsCompleted(2);
-        setIsUploadCoverOpen(false);
-      };
-      reader.readAsDataURL(file);
+
+  const handleDownloadContent = async (title, content, speechThreadId) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      toast.error("Authentication required. Please login.");
+      return;
     }
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImage(reader.result);
-        markStepAsCompleted(2);
-        setIsUploadCoverOpen(false);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleDownloadHtmlContent = (title, content) => {
-    const element = document.createElement("div");
-    element.innerHTML = content;
-
-    document.body.appendChild(element); // Temporarily add to the document
-
-    html2canvas(element)
-      .then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF();
-        pdf.setFontSize(20);
-        pdf.text(title, 10, 10);
-        pdf.addImage(imgData, "PNG", 0, 20, 210, 0); // Adjust width and height as needed
-        const dynamicTitle = title;
-        const dynamicPostName =
-          content.slice(0, 20).replace(/\s+/g, "_") || "Post";
-        pdf.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
-        document.body.removeChild(element); // Remove from the document after use
-      })
-      .catch((error) => {
-        console.error("Error generating PDF:", error);
-        document.body.removeChild(element); // Ensure element is removed in case of error
+  
+    const apiUrl = 'https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_pdf/';
+    const formData = new FormData();
+    formData.append('text', content);  // Ensure the full content with HTML is passed
+    formData.append('SpeechThread_id', speechThreadId);
+  
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        responseType: 'blob'
       });
-  };
-
-  const handleDownloadTextContent = (title, content) => {
-    const doc = new jsPDF();
-    const textContent = stripHtmlTags(content);
-    const textLines = doc.splitTextToSize(textContent, 180); // Adjust the line width to fit the PDF page
-
-    doc.setFontSize(20);
-    doc.text(title, 10, 10);
-    doc.setFontSize(12);
-
-    let y = 20;
-    textLines.forEach((line) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
+  
+      if (response.status === 200 && response.data) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${title}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+        toast.success("PDF downloaded successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error('Failed to generate PDF');
       }
-      doc.text(line, 10, y);
-      y += 10;
-    });
-
-    const dynamicTitle = title;
-    const dynamicPostName =
-      textContent.slice(0, 20).replace(/\s+/g, "_") || "Post";
-    doc.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }
   };
+  
+  
+  
+  const cleanContent = (content) => {
+    // Remove any invalid or unsupported tags or content
+    let cleanedContent = content.replace(/<\/?[^>]+(>|$)/g, ""); // Simple regex to remove HTML tags
+    return cleanedContent;
+  };
+  
+  
+  
+  
+
+ 
 
   const handleShareContent = (title, content) => {
     const textContent = stripHtmlTags(content);
@@ -586,28 +534,28 @@ const YoutubeLink = () => {
       title: "Summary",
       description: "A brief summary to encapsulate the essence.",
       image: Summary,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_summary/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Blog",
       description: "Create a comprehensive blog post.",
       image: Blog,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_blog_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "eBook",
       description: "Turn your content into a detailed eBook.",
       image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
@@ -615,28 +563,28 @@ const YoutubeLink = () => {
       description:
         "A sample is a good way to see best practices for inspiration.",
       image: Instagram,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_instagram_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Facebook",
       description: "Create a Facebook post.",
       image: Facebook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_facebook_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Twitter",
       description: "Generate a tweet for Twitter.",
       image: Twitter,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_twitter_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "LinkedIn",
       description: "Create a post for LinkedIn.",
       image: LinkedIn,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_linkedin_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
       speechThreadId: speechThreadId,
     },
   ];
@@ -773,7 +721,7 @@ const YoutubeLink = () => {
             </div>
             {isYouTubeLinkOpen && (
               <div className="flex flex-col">
-                <div className="bg-gray-50 border-dashed border-2 border-gray-300 p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
+                <div className="p-4 md:p-8 flex flex-col items-center justify-center w-full rounded-lg">
                   <div className="text-center w-full">
                     <p className="text-gray-400 mb-2">
                       Enter a link to transcribe it into text
@@ -793,14 +741,14 @@ const YoutubeLink = () => {
                         <div className="flex space-x-3 px-6">
                           {index !== 0 && (
                             <button
-                              className="text-white border p-2 border-[#6A707C] bg-[#6A707C] rounded-full h-10 w-10 flex items-center justify-center"
+                              className="text-white border p-2 border-[#6A707C] bg-[#6A707C] rounded-full h-10 w-10 flex items-center justify-center hover:border-[#6A707C] hover:bg-white hover:text-[#6A707C]"
                               onClick={() => handleRemoveYouTubeLink(index)}
                             >
                               <FontAwesomeIcon icon={faMinus} />
                             </button>
                           )}
                           <button
-                            className="text-white border p-2 bg-[#F2911B] rounded-full h-10 w-10 flex items-center justify-center"
+                            className="text-white border p-2 bg-[#F2911B] rounded-full h-10 w-10 flex items-center justify-center hover:border-[#F2911B] hover:bg-white hover:text-[#F2911B]"
                             onClick={handleAddYouTubeLink}
                           >
                             <FontAwesomeIcon icon={faPlus} />
@@ -811,7 +759,7 @@ const YoutubeLink = () => {
                     <div className="flex flex-col justify-center sm:flex-row sm:space-x-4 w-full mt-4">
                       <button
                         onClick={handleUploadClick}
-                        className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
+                        className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B] hover:text-[#F2911B] hover:bg-white border-2 hover:border-[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
                         disabled={isSubmitDisabled}
                       >
                         Submit
@@ -1027,48 +975,43 @@ const YoutubeLink = () => {
       <div className="flex items-center justify-between mb-4">
         <p className="font-bold text-lg">Generated {currentTitle}</p>
         <div className="flex items-center space-x-2">
-        {isEditing && (
-          <button
-            onClick={handleSaveText}
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-          >
-                                   <FontAwesomeIcon icon={faSave} className="text-white" />
+  {isEditing && (
+    <button
+      onClick={handleSaveText}
+      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+    >
+      <FontAwesomeIcon icon={faSave} className="" />
+    </button>
+  )}
+  {!isEditing && (
+    <button
+      onClick={handleEditToggle}
+      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+    >
+      <FontAwesomeIcon icon={faEdit} className="" />
+    </button>
+  )}
+  <button
+    onClick={() => handleCopyContent(generatedContent)}
+    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+  >
+    <FontAwesomeIcon icon={faCopy} className="" />
+  </button>
+  <button
+    onClick={() => handleDownloadContent(currentTitle, generatedContent, speechThreadId)}
+    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+  >
+    <FontAwesomeIcon icon={faDownload} className="" />
+  </button>
+  <button
+    onClick={() => handleShareContent(currentTitle, generatedContent)}
+    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+  >
+    <FontAwesomeIcon icon={faShareAlt} className="" />
+  </button>
+</div>
 
-          </button>
-        )}
-        {!isEditing && (
-          <button
-            onClick={handleEditToggle}
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-          >
-                       <FontAwesomeIcon icon={faEdit} className="text-white" />
 
-          </button>
-        )}
-          <button
-            onClick={handleCopyNewlyGeneratedContent}
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-          >
-            <FontAwesomeIcon icon={faCopy} className="text-white" />
-          </button>
-          <button
-            onClick={() =>
-              handleDownloadHtmlContent(currentTitle, generatedContent)
-            }
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-          >
-            <FontAwesomeIcon icon={faDownload} className="text-white" />
-          </button>
-
-          <button
-            onClick={() =>
-              handleShareContent(currentTitle, generatedContent)
-            }
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
-          >
-            <FontAwesomeIcon icon={faShareAlt} className="text-white" />
-          </button>
-        </div>
       </div>
       <div className="p-4 rounded-lg overflow-auto text-sm">
         {coverImage && (

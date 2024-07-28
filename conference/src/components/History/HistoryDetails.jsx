@@ -10,6 +10,8 @@ import {
   faPenToSquare,
   faCopy,
   faSignOutAlt,
+  faEdit,
+  faSave,
   faDownload,
   faShareAlt,
 } from "@fortawesome/free-solid-svg-icons";
@@ -25,10 +27,9 @@ import FileIcon from "../../Assets/images/music-icon.png";
 import "../../App.css";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 const HistoryDetails = () => {
   const { id } = useParams();
   const history = useHistory();
@@ -62,7 +63,7 @@ const HistoryDetails = () => {
     }
     try {
       const response = await axios.get(
-        `https://speechinsightsweb.azurewebsites.net/speech_history/${id}/retrieve/`,
+        `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${id}/retrieve/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setHistoryDetails(response.data);
@@ -78,6 +79,11 @@ const HistoryDetails = () => {
     const intervalId = setInterval(fetchHistoryDetails, 10000); // Fetch data every 10 seconds
 
     return () => clearInterval(intervalId); // Clear interval on component unmount
+  }, [id]);
+
+  useEffect(() => {
+    // Clear the generatedPost state when the id changes
+    setGeneratedPost(null);
   }, [id]);
 
   const updateGeneratedStatus = (data) => {
@@ -132,14 +138,14 @@ const HistoryDetails = () => {
       });
 
       const apiUrls = {
-        summary: "https://speechinsightsweb.azurewebsites.net/generate_summary/",
-        ebook: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
-        blog_post: "https://speechinsightsweb.azurewebsites.net/generate_blog_post/",
-        meeting_notes: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
-        facebook_post: "https://speechinsightsweb.azurewebsites.net/generate_facebook_post/",
-        twitter_post: "https://speechinsightsweb.azurewebsites.net/generate_twitter_post/",
-        linkedin_post: "https://speechinsightsweb.azurewebsites.net/generate_linkedin_post/",
-        instagram_post: "https://speechinsightsweb.azurewebsites.net/generate_instagram_post/",
+        summary: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
+        ebook: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
+        blog_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
+        meeting_notes: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
+        facebook_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
+        twitter_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
+        linkedin_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
+        instagram_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
       };
 
       const formData = new FormData();
@@ -225,26 +231,55 @@ const HistoryDetails = () => {
     
   };
 
-  const handleDownloadContent = (title, content) => {
-    const doc = new jsPDF("p", "pt", "a4");
-    const contentElement = document.createElement("div");
-    contentElement.innerHTML = content;
-    document.body.appendChild(contentElement);
-    
-    html2canvas(contentElement).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const imgProps = doc.getImageProperties(imgData);
-      const pdfWidth = doc.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      doc.save(`${title}.pdf`);
-      document.body.removeChild(contentElement);
-    }).catch((error) => {
-      console.error("Error generating PDF:", error);
-      Swal.fire("Error", "Failed to generate PDF. Please try again.", "error");
-    });
+  const handleDownloadContent = async (title, content, speechThreadId) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      toast.error("Authentication required. Please login.");
+      return;
+    }
+  
+    const apiUrl = 'https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_pdf/';
+    const formData = new FormData();
+    formData.append('text', content);
+    formData.append('SpeechThread_id', speechThreadId);
+  
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        responseType: 'blob'
+      });
+  
+      if (response.status === 200 && response.data) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${title}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+        toast.success("PDF downloaded successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error('Failed to generate PDF');
+      }
+    } catch (error) {
+      // console.error("Error generating PDF:", error);
+      // toast.error("Failed to generate PDF. Please try again.", {
+      //   position: "top-right",
+      //   autoClose: 5000,
+      // });
+    }
   };
+  
+  
 
   const handleShareContent = (content, title) => {
     if (navigator.share) {
@@ -308,9 +343,9 @@ const HistoryDetails = () => {
 
   const generateOptions = [
     { title: "Summary", type: "summary", image: Summary },
-    { title: "eBook", type: "ebook", image: eBook },
+    { title: "Notes", type: "meeting_notes", image: MeetingNotes },
     { title: "Blog", type: "blog_post", image: Blog },
-    { title: "Meeting Notes", type: "meeting_notes", image: MeetingNotes },
+    { title: "eBook", type: "ebook", image: eBook },
     { title: "Instagram", type: "instagram_post", image: Instagram },
     { title: "Facebook", type: "facebook_post", image: Facebook },
     { title: "Twitter", type: "twitter_post", image: Twitter },
@@ -367,57 +402,56 @@ const HistoryDetails = () => {
             )}
           </div>
 
-           <div className="hidden">
-           <div className="relative bg-white shadow-md rounded-3xl p-6">
-            <div
-              className={`flex items-center justify-between mb-4 cursor-pointer`}
-              onClick={() => setIsStep2Open(!isStep2Open)}
-            >
-              <div className="flex items-center space-x-2">
-                <span className="h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full bg-[#F2911B] text-white">
-                  2
-                </span>
-                <p className="font-bold text-lg">Transcript</p>
+          <div className="hidden">
+            <div className="relative bg-white shadow-md rounded-3xl p-6">
+              <div
+                className={`flex items-center justify-between mb-4 cursor-pointer`}
+                onClick={() => setIsStep2Open(!isStep2Open)}
+              >
+                <div className="flex items-center space-x-2">
+                  <span className="h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full bg-[#F2911B] text-white">
+                    2
+                  </span>
+                  <p className="font-bold text-lg">Transcript</p>
+                </div>
+                <FontAwesomeIcon icon={isStep2Open ? faAngleUp : faAngleDown} />
               </div>
-              <FontAwesomeIcon icon={isStep2Open ? faAngleUp : faAngleDown} />
+              {isStep2Open && (
+                <>
+                  <div className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg overflow-auto">
+                    {isEditingTranscript ? (
+                      <textarea
+                        className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg"
+                        value={historyDetails.text}
+                        onChange={(e) => setHistoryDetails({ ...historyDetails, text: e.target.value })}
+                      />
+                    ) : (
+                      <div className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg overflow-auto">
+                        {historyDetails.text}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-center mt-2">
+                    {isEditingTranscript ? (
+                      <button
+                        onClick={handleSaveTranscript}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Save
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleEditToggleTranscript}
+                        className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-            {isStep2Open && (
-              <>
-                <div className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg overflow-auto">
-                  {isEditingTranscript ? (
-                    <textarea
-                      className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg"
-                      value={historyDetails.text}
-                      onChange={(e) => setHistoryDetails({ ...historyDetails, text: e.target.value })}
-                    />
-                  ) : (
-                    <div className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg overflow-auto">
-                      {historyDetails.text}
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-center mt-2">
-                  {isEditingTranscript ? (
-                    <button
-                      onClick={handleSaveTranscript}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleEditToggleTranscript}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
           </div>
-           </div>
-        
 
           <div className="relative bg-white shadow-md rounded-3xl p-6">
             <div
@@ -425,7 +459,9 @@ const HistoryDetails = () => {
               onClick={() => setIsStep3Open(!isStep3Open)}
             >
               <div className="flex items-center space-x-2">
-                <span className="h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full bg-[#F2911B] text-white">3</span>
+                <span className="h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full bg-[#F2911B] text-white">
+                  2
+                </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
               <FontAwesomeIcon icon={isStep3Open ? faAngleUp : faAngleDown} />
@@ -452,7 +488,7 @@ const HistoryDetails = () => {
                             : "bg-[#F2911B] hover:bg-[#e57d0e]"
                         }`}
                       >
-                        {generatedStatus[option.type] ? "Generated" : "Generate"}
+                        {generatedStatus[option.type] ? `Generated ${option.title}` : `Generate `}
                         <FontAwesomeIcon
                           icon={faWandMagicSparkles}
                           className="text-white ml-2"
@@ -474,27 +510,46 @@ const HistoryDetails = () => {
           </div>
 
           {generatedPost && (
-            <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl" ref={generatedPostRef}>
+            <div
+              className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
+              ref={generatedPostRef}
+            >
               <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated Post</p>
+                <p className="font-bold text-lg">Generated {generatedPost.title}</p>
                 <div className="flex items-center space-x-2">
+                  {isEditingGenerated ? (
+                    <button
+                      onClick={handleSaveGeneratedText}
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                    >
+                      <FontAwesomeIcon icon={faSave} className="" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditingGenerated(true)}
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                    >
+                      <FontAwesomeIcon icon={faEdit} className="" />
+                    </button>
+                  )}
+
                   <button
                     onClick={() => handleCopyContent(generatedPost.content)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
-                    <FontAwesomeIcon icon={faCopy} className="text-white" />
+                    <FontAwesomeIcon icon={faCopy} className="" />
                   </button>
                   <button
-                    onClick={() => handleDownloadContent(generatedPost.title, generatedPost.content)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    onClick={() => handleDownloadContent(generatedPost.title, generatedPost.content, id)}
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
-                    <FontAwesomeIcon icon={faDownload} className="text-white" />
+                    <FontAwesomeIcon icon={faDownload} className="" />
                   </button>
                   <button
                     onClick={() => handleShareContent(generatedPost.content, generatedPost.title)}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
-                    <FontAwesomeIcon icon={faShareAlt} className="text-white" />
+                    <FontAwesomeIcon icon={faShareAlt} className="" />
                   </button>
                 </div>
               </div>
@@ -517,23 +572,6 @@ const HistoryDetails = () => {
                     dangerouslySetInnerHTML={{ __html: generatedPost.content }}
                   />
                 )}
-                <div className="flex justify-center mt-4">
-                  {isEditingGenerated ? (
-                    <button
-                      onClick={handleSaveGeneratedText}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsEditingGenerated(true)}
-                      className="mt-2 px-4 py-2 bg-[#F2911B] text-white rounded-3xl"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
           )}
@@ -544,7 +582,3 @@ const HistoryDetails = () => {
 };
 
 export default HistoryDetails;
-
-
-
-         

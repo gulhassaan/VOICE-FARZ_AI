@@ -114,7 +114,7 @@ const UploadFile = () => {
       console.error("No token found. Please login first.");
     } else {
       axios
-        .get("https://speechinsightsweb.azurewebsites.net/profile_picture/", {
+        .get("https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/", {
           headers: {
             Authorization: "Bearer " + token,
           },
@@ -140,7 +140,7 @@ const UploadFile = () => {
   
         axios
           .post(
-            "https://speechinsightsweb.azurewebsites.net/profile_picture/",
+            "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/",
             formData,
             {
               headers: {
@@ -324,7 +324,7 @@ const UploadFile = () => {
       });
 
       const response = await axios.post(
-        "https://speechinsightsweb.azurewebsites.net/transcribe/",
+        "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/transcribe/",
         formData,
         {
           headers: {
@@ -695,56 +695,56 @@ toast.success("Copied! The content has been copied to clipboard.", {
       title: "Summary",
       description: "A brief summary to encapsulate the essence.",
       image: Summary,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_summary/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Meeting Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Blog",
       description: "Create a comprehensive blog post.",
       image: Blog,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_blog_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "eBook",
       description: "Turn your content into a detailed eBook.",
       image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Instagram",
       description: "A sample is a good way to see best practices for inspiration.",
       image: Instagram,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_instagram_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Facebook",
       description: "Create a Facebook post.",
       image: Facebook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_facebook_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Twitter",
       description: "Generate a tweet for Twitter.",
       image: Twitter,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_twitter_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "LinkedIn",
       description: "Create a post for LinkedIn.",
       image: LinkedIn,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_linkedin_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
       speechThreadId: speechThreadId,
     },
   ];

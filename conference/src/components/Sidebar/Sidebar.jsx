@@ -47,7 +47,7 @@ const Sidebar = () => {
 
     try {
       const response = await axios.get(
-        "https://speechinsightsweb.azurewebsites.net/speech_history/",
+        "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/",
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -120,7 +120,7 @@ const Sidebar = () => {
 
     try {
       const response = await axios.delete(
-        `https://speechinsightsweb.azurewebsites.net/speech_history/${id}/delete/`,
+        `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${id}/delete/`,
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -172,7 +172,7 @@ const Sidebar = () => {
     }
     try {
       await axios.delete(
-        "https://speechinsightsweb.azurewebsites.net/speech_history/clear/",
+        "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/clear/",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchHistoryTitles();
@@ -232,7 +232,7 @@ const Sidebar = () => {
 
   const handleUpgradePlan = () => {
     // Handle upgrade plan logic here
-    history.push("/price")
+    history.push("/pricing")
   };
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
@@ -283,12 +283,12 @@ const Sidebar = () => {
             <NavLink
               onClick={toggleSidebar}
               to="/dashboard"
-              className="bg-[#f2911b] py-2 px-6 lg:px-12 rounded-full text-white font-regular flex items-center"
+              className="bg-[#f2911b] py-2 px-6 lg:px-12 rounded-full text-white font-regular flex items-center hover:border-2 hover:border-[#f2911b] hover:bg-transparent"
             >
               <span className="mr-2">+</span> New Voice
             </NavLink>
             <button
-              className="text-white bg-gray-600 p-2 rounded-full flex items-center justify-center ml-2"
+              className="text-white bg-gray-600 p-2 rounded-full flex items-center justify-center ml-2 hover:bg-white hover:text-gray-600"
               onClick={toggleSearchBar}
             >
               <FiSearch className="h-4 w-4" />
@@ -311,7 +311,7 @@ const Sidebar = () => {
               <div className="text-gray-500 text-xs">Today</div>
               <button
                 onClick={clearAllHistory}
-                className="text-white bg-gray-600 px-2 py-1 rounded-full flex items-center text-xs"
+                className="text-white bg-gray-600 px-2 py-1 rounded-full flex items-center text-xs hover:bg-white hover:text-gray-600"
               >
                 Clear All
               </button>
@@ -486,7 +486,7 @@ const Sidebar = () => {
             className="h-7 w-7 rounded-full"
           />
         ) : (
-          <div className="h-7 w-7 rounded-full bg-[#6A707C] flex items-center justify-center text-sm font-bold text-black">
+          <div className="h-7 w-7 border-[#f2911b] border rounded-full bg-transparent flex items-center justify-center text-sm font-bold text-white">
             {Username.charAt(0).toUpperCase()}
           </div>
         )}
@@ -495,7 +495,7 @@ const Sidebar = () => {
       {isDropdownVisible && (
         <div className="absolute right-2 bottom-24 w-40 bg-[#E8ECF4] border-t border-gray-700 rounded-xl flex flex-col space-y-2 z-10">
           <div className="flex justify-between items-center px-4 py-2">
-            <div className="flex items-center text-black cursor-pointer hover:bg-white" onClick={() => history.push('/setting')}>
+            <div className="flex items-center text-black cursor-pointer hover:text-[#f2911b]" onClick={() => history.push('/setting')}>
               <CiUser className="mr-2" />
               <span>Account</span>
             </div>
@@ -504,11 +504,11 @@ const Sidebar = () => {
               onClick={handleCloseDropdown}
             />
           </div>
-          <div className="px-4 py-2 text-black cursor-pointer hover:bg-white flex items-center" onClick={() => history.push('/setting')}>
+          <div className="px-4 py-2 text-black cursor-pointer hover:text-[#f2911b] flex items-center" onClick={() => history.push('/setting')}>
             <AiOutlineSetting className="mr-2" />
-            <span>Options</span>
+            <span>Setting</span>
           </div>
-          <div className="px-4 py-2 text-black cursor-pointer hover:bg-white flex items-center" onClick={Logout}>
+          <div className="px-4 py-2 text-black cursor-pointer hover:text-[#f2911b] flex items-center" onClick={Logout}>
             <AiOutlineLogout className="mr-2" />
             <span>Log Out</span>
           </div>

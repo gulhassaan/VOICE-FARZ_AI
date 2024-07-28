@@ -132,7 +132,7 @@ const scrollToGeneratedPost = () => {
       console.error("No token found. Please login first.");
     } else {
       axios
-        .get("https://speechinsightsweb.azurewebsites.net/profile_picture/", {
+        .get("https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/", {
           headers: {
             Authorization: "Bearer " + token,
           },
@@ -159,7 +159,7 @@ const scrollToGeneratedPost = () => {
 
         axios
           .post(
-            "https://speechinsightsweb.azurewebsites.net/profile_picture/",
+            "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/",
             formData,
             {
               headers: {
@@ -445,7 +445,7 @@ const scrollToGeneratedPost = () => {
       });
   
       const response = await axios.post(
-        "https://speechinsightsweb.azurewebsites.net/transcribe/",
+        "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/transcribe/",
         formData,
         {
           headers: {
@@ -762,28 +762,28 @@ const scrollToGeneratedPost = () => {
       title: "Summary",
       description: "A brief summary to encapsulate the essence.",
       image: Summary,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_summary/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Notes",
       description: "Generate concise and informative meeting notes.",
       image: MeetingNotes,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_meeting_notes/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Blog",
       description: "Create a comprehensive blog post.",
       image: Blog,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_blog_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "eBook",
       description: "Turn your content into a detailed eBook.",
       image: eBook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_ebook/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
       speechThreadId: speechThreadId,
     },
     {
@@ -791,28 +791,28 @@ const scrollToGeneratedPost = () => {
       description:
         "A sample is a good way to see best practices for inspiration.",
       image: Instagram,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_instagram_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Facebook",
       description: "Create a Facebook post.",
       image: Facebook,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_facebook_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "Twitter",
       description: "Generate a tweet for Twitter.",
       image: Twitter,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_twitter_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
       speechThreadId: speechThreadId,
     },
     {
       title: "LinkedIn",
       description: "Create a post for LinkedIn.",
       image: LinkedIn,
-      url: "https://speechinsightsweb.azurewebsites.net/generate_linkedin_post/",
+      url: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
       speechThreadId: speechThreadId,
     },
   ];
@@ -963,7 +963,7 @@ const scrollToGeneratedPost = () => {
                           {!isRecording && audioChunks.length === 0 ? (
                             <button
                               onClick={handleStart}
-                              className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10"
+                              className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10 hover:bg-white hover:border-2 hover:border-[#F2911B] hover:text-[#F2911B]"
                             >
                               <FontAwesomeIcon icon={faMicrophone} />
                             </button>
@@ -971,7 +971,7 @@ const scrollToGeneratedPost = () => {
                             <>
                               <button
                                 onClick={handlePause}
-                                className={`flex items-center justify-center w-10 h-10 text-gray-700 text-2xl transition-opacity rounded-full ${
+                                className={`flex items-center justify-center w-10 h-10 text-gray-700 text-2xl transition-opacity rounded-full hover:bg-gray-200 ${
                                   isPaused
                                     ? "opacity-50 animate-pulse bg-gray-200"
                                     : "opacity-100 bg-transparent"
@@ -989,14 +989,14 @@ const scrollToGeneratedPost = () => {
                                 )}
                                 <button
                                   onClick={handleSave}
-                                  className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10 mx-4"
+                                  className="w-20 h-20 flex items-center justify-center bg-[#F2911B] rounded-full text-white text-3xl shadow-lg z-10 mx-4 hover:animate-pulse hover:delay-200"
                                 >
                                   <FontAwesomeIcon icon={faStop} />
                                 </button>
                               </div>
                               <button
                                 onClick={handleReset}
-                                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl"
+                                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-transparent text-2xl hover:text-[#F2911B]"
                               >
                                 <FontAwesomeIcon icon={faRedo} />
                               </button>
@@ -1007,7 +1007,7 @@ const scrollToGeneratedPost = () => {
   <div className="mt-4 pt-8">
     <button
       onClick={handleUploadClick}
-      className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto`}
+      className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto border-2 hover:text-[#f2911b] hover:bg-white hover:border-[#f2911b]`}
       disabled={isSubmitDisabled}  // Disable the button based on the state
     >
       Submit
@@ -1256,24 +1256,24 @@ const scrollToGeneratedPost = () => {
                     {isEditing ? (
                       <button
                         onClick={handleSaveText}
-                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                       >
-                     <FontAwesomeIcon icon={faSave} className="text-white" />
+                     <FontAwesomeIcon icon={faSave} className="" />
                       </button>
                     ) : (
                       <button
                         onClick={handleEditToggle}
-                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                          className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                       >
-                          <FontAwesomeIcon icon={faEdit} className="text-white" />
+                          <FontAwesomeIcon icon={faEdit} className="" />
                       </button>
                     )}
               
                     <button
                       onClick={() => handleCopyContent(generatedPost.content)}
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                     >
-                      <FontAwesomeIcon icon={faCopy} className="text-white" />
+                      <FontAwesomeIcon icon={faCopy} className="" />
                     </button>
                     <button
                       onClick={() =>
@@ -1282,11 +1282,11 @@ const scrollToGeneratedPost = () => {
                           generatedPost.content
                         )
                       }
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                       className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                     >
                       <FontAwesomeIcon
                         icon={faDownload}
-                        className="text-white"
+                        className=""
                       />
                     </button>
                     <button
@@ -1296,11 +1296,11 @@ const scrollToGeneratedPost = () => {
                           generatedPost.content
                         )
                       }
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full"
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                     >
                       <FontAwesomeIcon
                         icon={faShareAlt}
-                        className="text-white"
+                        className=""
                       />
                     </button>
                   </div>

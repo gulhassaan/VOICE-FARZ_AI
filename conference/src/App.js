@@ -18,6 +18,7 @@ import Contact from './components/Expo/Contact.jsx';
 import './index.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Test from './components/test.jsx'
 export const TokenContext = createContext(null);
 
 function App() {    
@@ -28,13 +29,16 @@ function App() {
         <TokenContext.Provider value={token}>
         <Router basename={process.env.PUBLIC_URL || '/'}>
             <Switch>
+
+                
                 <Route path="/" exact component={Login} />
                 <Route path="/register" exact component={Registration} />
                 <Route path="/otp-verification" component={OtpVerification} />
                 <Route path="/forgot-password" component={ForgotPassword} />
                 <Route path="/new-password" component={NewPassword} />
-                <Route path="/price" component={PricingTable} />
+                <Route path="/pricing" component={PricingTable} />
                 <Route path="/contact" component={Contact} />
+                <Route path="/test" component={Test} />
            
 
                 {/**Routing that take Sidebar with itself  Start */}

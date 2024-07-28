@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://speechinsightsweb.azurewebsites.net/resend_password_reset_otp/', {
+            const response = await axios.post('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/resend_password_reset_otp/', {
                 email: email
             }, {
                 headers: {

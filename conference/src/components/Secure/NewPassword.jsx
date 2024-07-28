@@ -65,7 +65,7 @@ const ResetPassword = () => {
             return;
         }
         try {
-            const response = await axios.post('https://speechinsightsweb.azurewebsites.net/password_reset/reset_password/', {
+            const response = await axios.post('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/password_reset/reset_password/', {
                 email: formData.email,
                 new_password: formData.newPassword,
                 otp: formData.otp
