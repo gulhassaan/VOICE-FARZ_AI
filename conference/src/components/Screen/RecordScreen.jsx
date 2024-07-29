@@ -26,8 +26,8 @@ import {
 
 import axios from "axios";
 import Swal from "sweetalert2";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -218,43 +218,35 @@ const scrollToGeneratedPost = () => {
 
   const handleEditToggleGenerated = () => {
     setIsEditingGenerated(!isEditingGenerated);
-    if (isEditingGenerated && editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
-      setGeneratedContent(editedContent);
+    if (isEditingGenerated) {
+      setGeneratedContent(generatedPost.content);
       setSavedGeneratedPosts((prev) => ({
         ...prev,
-        [generatedPost.title]: editedContent,
+        [generatedPost.title]: generatedPost.content,
       }));
-      setGeneratedPost({ ...generatedPost, content: editedContent });
     }
   };
+  
 
   const handleSaveText = () => {
-    if (editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
-      setGeneratedContent(editedContent);
-      setSavedGeneratedPosts((prev) => ({
-        ...prev,
-        [generatedContent.title]: editedContent,
-      }));
-    }
+    setSavedGeneratedPosts((prev) => ({
+      ...prev,
+      [generatedContent.title]: generatedContent,
+    }));
     setIsEditing(false);
     markStepAsCompleted(1);
     setIsTranscriptOpen(!isTranscriptOpen);
   };
+  
 
   const handleSaveGeneratedText = () => {
-    if (editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
-      setGeneratedContent(editedContent);
-      setSavedGeneratedPosts((prev) => ({
-        ...prev,
-        [generatedPost.title]: editedContent,
-      }));
-      setGeneratedPost({ ...generatedPost, content: editedContent });
-    }
+    setSavedGeneratedPosts((prev) => ({
+      ...prev,
+      [generatedPost.title]: generatedPost.content,
+    }));
     setIsEditingGenerated(false);
   };
+  
 
   const handleFileChange = (event) => {
     setFiles([...files, ...event.target.files]);
@@ -638,7 +630,7 @@ const scrollToGeneratedPost = () => {
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
-      markStepAsCompleted(2);
+      markStepAsCompleted(3);
       setTimeout(() => {
         document.getElementById(`generateBtn${title}`).click();
       }, 400);
@@ -1307,17 +1299,12 @@ const scrollToGeneratedPost = () => {
                 </div>
                 <div className="p-4  rounded-lg overflow-auto text-sm">
                   {isEditingGenerated ? (
-                    <CKEditor
-                      editor={ClassicEditor}
-                      data={generatedPost.content}
-                      onInit={(editor) => {
-                        editorInstance.current = editor;
-                      }}
-                      onChange={(event, editor) => {
-                        const data = editor.getData();
-                        setGeneratedPost({ ...generatedPost, content: data });
-                      }}
-                    />
+                  <ReactQuill
+                  value={generatedPost.content}
+                  onChange={(content) => {
+                    setGeneratedPost({ ...generatedPost, content });
+                  }}
+                />
                   ) : generatedPost.isHtmlContent ? (
                     <>
                       {coverImage && (

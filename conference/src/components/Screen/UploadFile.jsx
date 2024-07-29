@@ -22,8 +22,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -217,17 +217,14 @@ const UploadFile = () => {
   };
 
   const handleSaveGeneratedText = () => {
-    if (editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
-      setGeneratedContent(editedContent);
-      setSavedGeneratedPosts((prev) => ({
-        ...prev,
-        [generatedPost.title]: editedContent,
-      }));
-      setGeneratedPost({ ...generatedPost, content: editedContent });
-      setIsEditingGenerated(false);
-    }
+    setSavedGeneratedPosts((prev) => ({
+      ...prev,
+      [generatedPost.title]: generatedPost.content,
+    }));
+    setGeneratedPost({ ...generatedPost, content: generatedPost.content });
+    setIsEditingGenerated(false);
   };
+  
 
   const handleFileChange = (event) => {
     const acceptedTypes = ['audio/*', 'video/*'];
@@ -1187,17 +1184,12 @@ toast.success("Copied! The content has been copied to clipboard.", {
                 </div>
                 <div className="p-4 rounded-lg overflow-auto text-sm">
                   {isEditingGenerated ? (
-                    <CKEditor
-                      editor={ClassicEditor}
-                      data={generatedPost.content}
-                      onReady={(editor) => {
-                        editorInstance.current = editor;
-                      }}
-                      onChange={(event, editor) => {
-                        const data = editor.getData();
-                        setGeneratedPost({ ...generatedPost, content: data });
-                      }}
-                    />
+                   <ReactQuill
+                   value={generatedPost.content}
+                   onChange={(content) => setGeneratedPost({ ...generatedPost, content })}
+                   ref={editorInstance}
+               />
+               
                   ) : generatedPost.isHtmlContent ? (
                     <div
                       className="prose max-w-none"

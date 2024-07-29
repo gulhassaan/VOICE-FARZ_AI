@@ -19,8 +19,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -1022,17 +1023,12 @@ const YoutubeLink = () => {
           />
         )}
         {isEditing ? (
-          <CKEditor
-            editor={ClassicEditor}
-            data={generatedContent}
-            onReady={(editor) => {
-              editorInstance.current = editor;
-            }}
-            onChange={(event, editor) => {
-              const data = editor.getData();
-              setGeneratedContent(data);
-            }}
-          />
+          <ReactQuill
+          value={generatedContent}
+          onChange={(content) => setGeneratedContent(content)}
+          ref={editorInstance}
+      />
+      
         ) : (
           <div
             ref={generatedPostRef}

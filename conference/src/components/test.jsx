@@ -29,29 +29,51 @@ const EditableText = () => {
         <pre class="bg-gray-200 rounded p-4"><code>This is a code block.</code></pre>
         <a href="#" class="text-blue-500 underline">This is a link</a>
     `);
+    const [editorContent, setEditorContent] = useState(content);
 
     const handleEditClick = () => {
         setIsEditing(true);
+        setEditorContent(content); // Load current content into editor
     };
 
-    const handleSave = (value) => {
-        setContent(value);
+    const handleSaveClick = () => {
+        setContent(editorContent);
+        setIsEditing(false);
+    };
+
+    const handleCancelClick = () => {
         setIsEditing(false);
     };
 
     return (
         <div className="p-4">
             {isEditing ? (
-                <ReactQuill value={content} onChange={handleSave} />
+                <>
+                    <ReactQuill value={editorContent} onChange={setEditorContent} />
+                    <button 
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" 
+                        onClick={handleSaveClick}
+                    >
+                        Save
+                    </button>
+                    <button 
+                        className="mt-4 px-4 py-2 bg-gray-500 text-white rounded ml-2" 
+                        onClick={handleCancelClick}
+                    >
+                        Cancel
+                    </button>
+                </>
             ) : (
-                <div className="prose" dangerouslySetInnerHTML={{ __html: content }}></div>
+                <>
+                    <div className="prose" dangerouslySetInnerHTML={{ __html: content }}></div>
+                    <button 
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" 
+                        onClick={handleEditClick}
+                    >
+                        Edit Text
+                    </button>
+                </>
             )}
-            <button 
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" 
-                onClick={handleEditClick}
-            >
-                Edit Text
-            </button>
         </div>
     );
 };

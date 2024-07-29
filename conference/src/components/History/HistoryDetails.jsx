@@ -25,8 +25,8 @@ import LinkedIn from "../../Assets/images/linkedin1.png";
 import Instagram from "../../Assets/images/instagram1.png";
 import FileIcon from "../../Assets/images/music-icon.png";
 import "../../App.css";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -316,7 +316,7 @@ const HistoryDetails = () => {
 
   const handleSaveGeneratedText = () => {
     if (editorInstance.current) {
-      const editedContent = editorInstance.current.getData();
+      const editedContent = editorInstance.current.getEditor().root.innerHTML;
       setGeneratedPost({ ...generatedPost, content: editedContent });
       setIsEditingGenerated(false);
     }
@@ -555,17 +555,11 @@ const HistoryDetails = () => {
               </div>
               <div className="p-4 rounded-lg overflow-auto text-sm">
                 {isEditingGenerated ? (
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={generatedPost.content}
-                    onReady={(editor) => {
-                      editorInstance.current = editor;
-                    }}
-                    onChange={(event, editor) => {
-                      const data = editor.getData();
-                      setGeneratedPost({ ...generatedPost, content: data });
-                    }}
-                  />
+                   <ReactQuill
+                   value={generatedPost.content}
+                   onChange={(content) => setGeneratedPost({ ...generatedPost, content })}
+                   ref={editorInstance}
+                 />
                 ) : (
                   <div
                     className="prose max-w-none"
