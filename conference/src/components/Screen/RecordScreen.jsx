@@ -291,7 +291,6 @@ const scrollToGeneratedPost = () => {
     }
   } catch (error) {
     console.error("Error saving generated content:", error);
-    Swal.fire("Error", "Failed to save content. Please try again later.", "error");
   }
 };
 
