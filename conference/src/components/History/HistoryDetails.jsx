@@ -3,18 +3,7 @@ import { useParams, useHistory } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faAngleDown,
-  faAngleUp,
-  faWandMagicSparkles,
-  faPenToSquare,
-  faCopy,
-  faSignOutAlt,
-  faEdit,
-  faSave,
-  faDownload,
-  faShareAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { faAngleDown, faAngleUp, faWandMagicSparkles, faPenToSquare, faCopy, faSignOutAlt, faEdit, faSave, faDownload, faShareAlt, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -29,6 +18,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ShareHistory from './ShareHistory'; // Import the ShareHistory component
 
 const HistoryDetails = () => {
   const { id } = useParams();
@@ -47,7 +37,8 @@ const HistoryDetails = () => {
   });
   const [isEditingTranscript, setIsEditingTranscript] = useState(true);
   const [isEditingGenerated, setIsEditingGenerated] = useState(false);
-  const [generatedPost, setGeneratedPost] = useState(null);
+  const [generatedContent, setGeneratedContent] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
   const [isStep1Open, setIsStep1Open] = useState(false);
   const [isStep2Open, setIsStep2Open] = useState(false);
   const [isStep3Open, setIsStep3Open] = useState(true);
@@ -75,15 +66,18 @@ const HistoryDetails = () => {
   };
 
   useEffect(() => {
+    console.log("HistoryDetails id:", id); // Debugging log
+    setHistoryDetails(null);
     fetchHistoryDetails();
-    const intervalId = setInterval(fetchHistoryDetails, 10000); // Fetch data every 10 seconds
+    const intervalId = setInterval(fetchHistoryDetails, 1000); 
 
-    return () => clearInterval(intervalId); // Clear interval on component unmount
+    return () => clearInterval(intervalId); 
   }, [id]);
 
   useEffect(() => {
+    console.log("HistoryDetails id:", id); // Debugging log
     // Clear the generatedPost state when the id changes
-    setGeneratedPost(null);
+    setGeneratedContent(null);
   }, [id]);
 
   const updateGeneratedStatus = (data) => {
@@ -99,22 +93,24 @@ const HistoryDetails = () => {
     });
   };
 
-  const handleGenerateContent = async (type, title) => {
+  const handleGenerateContent = async (type, title, isRegeneration = false) => {
     const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire("Error", "Authentication required. Please login.", "error");
       return;
     }
 
-    if (generatedStatus[type]) {
-      setGeneratedPost({
+    if (!isRegeneration && generatedStatus[type]) {
+      setGeneratedContent({
+        type,
         title,
         content: historyDetails[type],
-        isHtmlContent: true,
       });
-      setIsEditingGenerated(true);
+      setIsEditingGenerated(false);
       return;
     }
+
+    setRegenerating(true);
 
     try {
       Swal.fire({
@@ -170,12 +166,13 @@ const HistoryDetails = () => {
           [type]: true,
         }));
 
-        setGeneratedPost({
+        setGeneratedContent({
+          type,
           title,
           content: response.data[type],
-          isHtmlContent: true,
         });
         setIsEditingGenerated(true);
+        setRegenerating(false);
         Swal.close();
 
         // Automatically open the next step
@@ -192,15 +189,16 @@ const HistoryDetails = () => {
       }
     } catch (error) {
       console.error("Error generating content:", error);
+      setRegenerating(false);
       Swal.fire("Error", `Failed to generate ${title}. ${error.response ? error.response.data : "Please try again later."}`, "error");
     }
   };
 
   useEffect(() => {
-    if (generatedPost) {
+    if (generatedContent) {
       scrollToGeneratedPost();
     }
-  }, [generatedPost]);
+  }, [generatedContent]);
 
   const scrollToGeneratedPost = () => {
     setTimeout(() => {
@@ -213,7 +211,6 @@ const HistoryDetails = () => {
       }
     }, 100);
   };
-  
 
   const handleCopyContent = (content) => {
     const listener = (e) => {
@@ -271,15 +268,13 @@ const HistoryDetails = () => {
         throw new Error('Failed to generate PDF');
       }
     } catch (error) {
-      // console.error("Error generating PDF:", error);
+      console.error("Error generating PDF:", error);
       // toast.error("Failed to generate PDF. Please try again.", {
       //   position: "top-right",
       //   autoClose: 5000,
       // });
     }
   };
-  
-  
 
   const handleShareContent = (content, title) => {
     if (navigator.share) {
@@ -314,13 +309,67 @@ const HistoryDetails = () => {
     setIsEditingTranscript(false);
   };
 
-  const handleSaveGeneratedText = () => {
+  const handleSaveGeneratedText = async () => {
     if (editorInstance.current) {
       const editedContent = editorInstance.current.getEditor().root.innerHTML;
-      setGeneratedPost({ ...generatedPost, content: editedContent });
+      setGeneratedContent({
+        ...generatedContent,
+        content: editedContent
+      });
       setIsEditingGenerated(false);
+  
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire("Error", "Authentication required. Please login.", "error");
+          return;
+        }
+  
+        const dataToUpdate = {
+          youtube_links: historyDetails.youtube_links,
+          recording_file_names: historyDetails.recording_file_names,
+          multiple_speakers: historyDetails.multiple_speakers,
+          status: historyDetails.status,
+          text: historyDetails.text,
+          twitter_post: generatedContent.type === "twitter_post" ? editedContent : historyDetails.twitter_post,
+          facebook_post: generatedContent.type === "facebook_post" ? editedContent : historyDetails.facebook_post,
+          instagram_post: generatedContent.type === "instagram_post" ? editedContent : historyDetails.instagram_post,
+          linkedin_post: generatedContent.type === "linkedin_post" ? editedContent : historyDetails.linkedin_post,
+          meeting_notes: generatedContent.type === "meeting_notes" ? editedContent : historyDetails.meeting_notes,
+          summary: generatedContent.type === "summary" ? editedContent : historyDetails.summary,
+          whitepaper: historyDetails.whitepaper,
+          blog_post: generatedContent.type === "blog_post" ? editedContent : historyDetails.blog_post,
+          ebook: generatedContent.type === "ebook" ? editedContent : historyDetails.ebook,
+          title: historyDetails.title,
+          user: historyDetails.user, // Ensure this is a valid user ID
+          pdf_file: historyDetails.pdf_file, // Ensure this is a valid file ID
+          picture_file: historyDetails.picture_file // Ensure this is a valid file ID
+        };
+  
+        const response = await axios.put(
+          `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${id}/update/`,
+          dataToUpdate,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+  
+        if (response.status === 200) {
+          toast.success("Content saved successfully!", {
+            position: "top-right",
+            autoClose: 5000
+          });
+        } else {
+          throw new Error("Failed to save content");
+        }
+      } catch (error) {
+        console.error("Error saving generated content:", error);
+        Swal.fire("Error", "Failed to save content. Please try again later.", "error");
+      }
     }
   };
+  
+  
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -360,6 +409,8 @@ const HistoryDetails = () => {
     <div className="container mx-auto px-0">
       <div className="flex flex-col items-center mt-4 py-10 bg-[#E8ECF4] rounded-2xl">
         <div className="space-y-6 mx-auto w-full max-w-5xl px-0">
+          <ShareHistory speechThreadId={id} />
+          {/* Add the ShareHistory component here */}
           <div className="relative bg-white shadow-md rounded-3xl p-6">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer`}
@@ -509,13 +560,13 @@ const HistoryDetails = () => {
             )}
           </div>
 
-          {generatedPost && (
+          {generatedContent && (
             <div
               className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
               ref={generatedPostRef}
             >
               <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg">Generated {generatedPost.title}</p>
+                <p className="font-bold text-lg">Generated {generatedContent.title}</p>
                 <div className="flex items-center space-x-2">
                   {isEditingGenerated ? (
                     <button
@@ -534,41 +585,50 @@ const HistoryDetails = () => {
                   )}
 
                   <button
-                    onClick={() => handleCopyContent(generatedPost.content)}
+                    onClick={() => handleCopyContent(generatedContent.content)}
                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
                     <FontAwesomeIcon icon={faCopy} className="" />
                   </button>
                   <button
-                    onClick={() => handleDownloadContent(generatedPost.title, generatedPost.content, id)}
+                    onClick={() => handleDownloadContent(generatedContent.title, generatedContent.content, id)}
                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
                     <FontAwesomeIcon icon={faDownload} className="" />
                   </button>
                   <button
-                    onClick={() => handleShareContent(generatedPost.content, generatedPost.title)}
+                    onClick={() => handleShareContent(generatedContent.content, generatedContent.title)}
                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
                   >
                     <FontAwesomeIcon icon={faShareAlt} className="" />
+                  </button>
+                  <button
+                    onClick={() => handleGenerateContent(generatedContent.type, generatedContent.title, true)}
+                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                  >
+                    <FontAwesomeIcon icon={faSyncAlt} className="" />
                   </button>
                 </div>
               </div>
               <div className="p-4 rounded-lg overflow-auto text-sm">
                 {isEditingGenerated ? (
-                   <ReactQuill
-                   value={generatedPost.content}
-                   onChange={(content) => setGeneratedPost({ ...generatedPost, content })}
-                   ref={editorInstance}
-                 />
+                  <ReactQuill
+                    value={generatedContent.content}
+                    onChange={(content) => setGeneratedContent({ ...generatedContent, content })}
+                    ref={editorInstance}
+                  />
                 ) : (
                   <div
                     className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedPost.content }}
+                    dangerouslySetInnerHTML={{ __html: regenerating ? "Generating content..." : generatedContent.content }}
                   />
                 )}
               </div>
             </div>
           )}
+
+
+
         </div>
       </div>
     </div>

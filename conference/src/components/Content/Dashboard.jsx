@@ -16,7 +16,6 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         if (!token) {
             toast.warn('Session Expired. Please log in again.', {
-                position: toast.POSITION.TOP_CENTER,
                 onClose: () => {
                     history.push('/');
                 },

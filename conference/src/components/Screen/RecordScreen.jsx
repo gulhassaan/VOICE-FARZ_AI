@@ -239,13 +239,62 @@ const scrollToGeneratedPost = () => {
   };
   
 
-  const handleSaveGeneratedText = () => {
-    setSavedGeneratedPosts((prev) => ({
-      ...prev,
-      [generatedPost.title]: generatedPost.content,
-    }));
-    setIsEditingGenerated(false);
-  };
+ const handleSaveGeneratedText = async () => {
+  setSavedGeneratedPosts((prev) => ({
+    ...prev,
+    [generatedPost.title]: generatedPost.content,
+  }));
+  setIsEditingGenerated(false);
+
+  try {
+    if (!token) {
+      Swal.fire("Error", "Authentication required. Please login.", "error");
+      return;
+    }
+
+    const dataToUpdate = {
+      youtube_links: [],
+      recording_file_names: files.map(file => file.name),
+      multiple_speakers: false,
+      status: "completed",
+      text: transcript,
+      twitter_post: generatedPost.title === "Twitter" ? generatedPost.content : "",
+      facebook_post: generatedPost.title === "Facebook" ? generatedPost.content : "",
+      instagram_post: generatedPost.title === "Instagram" ? generatedPost.content : "",
+      linkedin_post: generatedPost.title === "LinkedIn" ? generatedPost.content : "",
+      meeting_notes: generatedPost.title === "Notes" ? generatedPost.content : "",
+      summary: generatedPost.title === "Summary" ? generatedPost.content : "",
+      whitepaper: "",
+      blog_post: generatedPost.title === "Blog" ? generatedPost.content : "",
+      ebook: generatedPost.title === "eBook" ? generatedPost.content : "",
+      title: "Generated Post",
+      user: 1, // Replace with actual user ID if needed
+      pdf_file: 0,
+      picture_file: 0,
+    };
+
+    const response = await axios.put(
+      `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${speechThreadId}/update/`,
+      dataToUpdate,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (response.status === 200) {
+      toast.success("Content saved successfully!", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } else {
+      throw new Error("Failed to save content");
+    }
+  } catch (error) {
+    console.error("Error saving generated content:", error);
+    Swal.fire("Error", "Failed to save content. Please try again later.", "error");
+  }
+};
+
   
 
   const handleFileChange = (event) => {
@@ -465,11 +514,20 @@ const scrollToGeneratedPost = () => {
         console.error("Response data:", error.response.data);
         console.error("Response status:", error.response.status);
         console.error("Response headers:", error.response.headers);
+        
+        if (error.response.data.detail) {
+          Swal.fire("Error", error.response.data.detail, "error");
+        } else {
+          Swal.fire(
+            "Error",
+            "Transcription failed: " + (error.response.data.errors ? error.response.data.errors.join(", ") : error.message),
+            "error"
+          );
+        }
+      } else {
         Swal.fire(
           "Error",
-          "Transcription failed: " + Array.isArray(error.response.data.errors)
-            ? error.response.data.errors?.join(", ")
-            : error.response.data.error,
+          "Transcription failed: " + error.message,
           "error"
         );
       }
@@ -1237,109 +1295,109 @@ const scrollToGeneratedPost = () => {
           </div>
 
           {generatedPost && (
-            <div className="flex flex-col mt-8" id={generatedPost.title} ref={generatedPostRef}>
-              <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="font-bold text-lg">
-                    {" "}
-                    Generated {generatedPost.title}
-                  </p>
-                  <div className="flex items-center space-x-2">
-                    {isEditing ? (
-                      <button
-                        onClick={handleSaveText}
-                    className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                      >
-                     <FontAwesomeIcon icon={faSave} className="" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleEditToggle}
-                          className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                      >
-                          <FontAwesomeIcon icon={faEdit} className="" />
-                      </button>
-                    )}
-              
-                    <button
-                      onClick={() => handleCopyContent(generatedPost.content)}
-                     className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                    >
-                      <FontAwesomeIcon icon={faCopy} className="" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleDownloadTextContent(
-                          generatedPost.title,
-                          generatedPost.content
-                        )
-                      }
-                       className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                    >
-                      <FontAwesomeIcon
-                        icon={faDownload}
-                        className=""
-                      />
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleShareContent(
-                          generatedPost.title,
-                          generatedPost.content
-                        )
-                      }
-                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                    >
-                      <FontAwesomeIcon
-                        icon={faShareAlt}
-                        className=""
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div className="p-4  rounded-lg overflow-auto text-sm">
-                  {isEditingGenerated ? (
-                  <ReactQuill
-                  value={generatedPost.content}
-                  onChange={(content) => {
-                    setGeneratedPost({ ...generatedPost, content });
-                  }}
-                />
-                  ) : generatedPost.isHtmlContent ? (
-                    <>
-                      {coverImage && (
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg mb-4"
-                        />
-                      )}
-                      <div
-                        className="prose max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: generatedPost.content,
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      {coverImage && (
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg mb-4"
-                        />
-                      )}
-                      <div className="whitespace-pre-wrap">
-                        {stripHtmlTags(generatedPost.content)}
-                      </div>
-                    </>
-                  )}
-                 
-                </div>
-              </div>
-            </div>
+  <div className="flex flex-col mt-8" id={generatedPost.title} ref={generatedPostRef}>
+    <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-bold text-lg">
+          {" "}
+          Generated {generatedPost.title}
+        </p>
+        <div className="flex items-center space-x-2">
+          {isEditingGenerated ? (
+            <button
+              onClick={handleSaveGeneratedText}
+              className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+            >
+              <FontAwesomeIcon icon={faSave} className="" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditingGenerated(true)}
+              className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+            >
+              <FontAwesomeIcon icon={faEdit} className="" />
+            </button>
           )}
+
+          <button
+            onClick={() => handleCopyContent(generatedPost.content)}
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+          >
+            <FontAwesomeIcon icon={faCopy} className="" />
+          </button>
+          <button
+            onClick={() =>
+              handleDownloadTextContent(
+                generatedPost.title,
+                generatedPost.content
+              )
+            }
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+          >
+            <FontAwesomeIcon
+              icon={faDownload}
+              className=""
+            />
+          </button>
+          <button
+            onClick={() =>
+              handleShareContent(
+                generatedPost.title,
+                generatedPost.content
+              )
+            }
+            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+          >
+            <FontAwesomeIcon
+              icon={faShareAlt}
+              className=""
+            />
+          </button>
+        </div>
+      </div>
+      <div className="p-4  rounded-lg overflow-auto text-sm">
+        {isEditingGenerated ? (
+          <ReactQuill
+            value={generatedPost.content}
+            onChange={(content) => {
+              setGeneratedPost({ ...generatedPost, content });
+            }}
+          />
+        ) : generatedPost.isHtmlContent ? (
+          <>
+            {coverImage && (
+              <img
+                src={coverImage}
+                alt="Cover"
+                className="h-48 w-full object-cover rounded-lg mb-4"
+              />
+            )}
+            <div
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: generatedPost.content,
+              }}
+            />
+          </>
+        ) : (
+          <>
+            {coverImage && (
+              <img
+                src={coverImage}
+                alt="Cover"
+                className="h-48 w-full object-cover rounded-lg mb-4"
+              />
+            )}
+            <div className="whitespace-pre-wrap">
+              {stripHtmlTags(generatedPost.content)}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
         </div>
       </div>
     </div>

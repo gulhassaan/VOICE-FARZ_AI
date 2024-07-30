@@ -33,17 +33,20 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoader(true); // Show spinner on form submission
-
+    
+        // Trim whitespace from username
+        const trimmedUsername = formData.username.trim();
+    
         // Form validation
-        if (formData.username === formData.password) {
-            toast.error('Fill out Valid username and password');
+        if (trimmedUsername === formData.password) {
+            toast.error('Fill out valid username and password');
             setLoader(false); // Hide spinner if validation fails
             return; // Exit the function if validation fails
         }
-
+    
         try {
             const response = await axios.post('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/login/', {
-                username: formData.username,
+                username: trimmedUsername,
                 password: formData.password
             }, {
                 headers: {
@@ -56,7 +59,7 @@ const Login = () => {
             
             console.log('Response:', response.data);
             console.log('token:', response.data.token);
-            localStorage.setItem('Username', formData.username);
+            localStorage.setItem('Username', trimmedUsername);
             localStorage.setItem("token", response.data.token);
             setTimeout(() => {
                 console.log('Navigating to dashboard page');
@@ -69,7 +72,6 @@ const Login = () => {
             setLoader(false); // Hide spinner on error
         }
     };
-
     const getGoogleLink = () => {
         axios.get('https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/googleredirect/')
             .then((res) => {

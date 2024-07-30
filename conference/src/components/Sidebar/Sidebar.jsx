@@ -490,7 +490,7 @@ const Sidebar = () => {
             {Username.charAt(0).toUpperCase()}
           </div>
         )}
-        <span className="text-white text-sm">{Username}</span>
+        <span className="text-white text-xs">{Username}</span>
       </div>
       {isDropdownVisible && (
         <div className="absolute right-2 bottom-24 w-40 bg-[#E8ECF4] border-t border-gray-700 rounded-xl flex flex-col space-y-2 z-10">

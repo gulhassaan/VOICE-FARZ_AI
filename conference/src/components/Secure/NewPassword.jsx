@@ -27,6 +27,17 @@ const ResetPassword = () => {
         });
     };
 
+    const handlePaste = (e) => {
+        const paste = e.clipboardData.getData('text');
+        if (/^\d*$/.test(paste) && paste.length <= 6) {
+            e.preventDefault();
+            setFormData({
+                ...formData,
+                otp: paste
+            });
+        }
+    };
+
     const validatePassword = (password) => {
         const minLength = /.{8,}/;
         const uppercase = /[A-Z]/;
@@ -157,6 +168,7 @@ const ResetPassword = () => {
                             placeholder="OTP"
                             value={formData.otp}
                             onChange={handleChange}
+                            onPaste={handlePaste}
                             className="w-full px-4 py-4 text-gray-700 border border-gray-200 rounded-md bg-[#F7F8F9] focus:outline-none focus:ring-2 focus:ring-[#f2911b54] focus:border-transparent"
                         />
                     </div>

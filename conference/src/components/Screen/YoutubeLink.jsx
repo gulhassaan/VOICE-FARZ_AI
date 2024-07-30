@@ -275,19 +275,30 @@ const YoutubeLink = () => {
       setIsAnimating(false);
     }, 2000); // Duration of the animation
 
-    } catch (error) {
-      console.error("Error in transcription:", error);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
+  } catch (error) {
+    console.error("Error in transcription:", error);
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      console.error("Response status:", error.response.status);
+      console.error("Response headers:", error.response.headers);
+      
+      if (error.response.data.detail) {
+        Swal.fire("Error", error.response.data.detail, "error");
+      } else {
         Swal.fire(
           "Error",
-          "Transcription failed: " + error.response.data.errors.join(", "),
+          "Transcription failed: " + (error.response.data.errors ? error.response.data.errors.join(", ") : error.message),
           "error"
         );
       }
+    } else {
+      Swal.fire(
+        "Error",
+        "Transcription failed: " + error.message,
+        "error"
+      );
     }
+  }
     setIsYouTubeLinkOpen(!isYouTubeLinkOpen);
   };
 

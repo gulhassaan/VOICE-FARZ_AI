@@ -264,7 +264,7 @@ const UploadFile = () => {
       alert("Please login to perform this action.");
       return;
     }
-
+  
     let formData = new FormData();
     if (profilePictureUrl) {
       formData.append("profile_picture", profilePictureUrl);
@@ -279,7 +279,7 @@ const UploadFile = () => {
       alert("No files or recordings available for upload.");
       return;
     }
-
+  
     try {
       const customLoader = `
         <div class="relative flex items-center justify-center overflow-hidden mt-4">
@@ -290,7 +290,7 @@ const UploadFile = () => {
           </div>
         </div>
       `;
-
+  
       const customHeader = `
         <div class="flex justify-between items-center w-full">
           <div class="text-lg">Processing Audio/video File</div>
@@ -301,11 +301,9 @@ const UploadFile = () => {
           </button>
         </div>
         <hr class="border-gray-300 w-full my-2">
-     <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
-
-
+        <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
       `;
-
+  
       Swal.fire({
         html: `
           ${customHeader}
@@ -316,16 +314,13 @@ const UploadFile = () => {
         customClass: {
           popup: "w-96 h-64 flex flex-col items-start justify-start p-4", // Adjusting the popup class
           title: "text-lg",
-          htmlContainer:
-            "flex flex-col items-center justify-center w-full h-full",
+          htmlContainer: "flex flex-col items-center justify-center w-full h-full",
         },
         didOpen: () => {
-          document
-            .getElementById("close-btn")
-            .addEventListener("click", () => Swal.close());
+          document.getElementById("close-btn").addEventListener("click", () => Swal.close());
         },
       });
-
+  
       const response = await axios.post(
         "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/transcribe/",
         formData,
@@ -336,35 +331,46 @@ const UploadFile = () => {
           },
         }
       );
-
+  
       setTranscript(response.data.SpeechThread.text); // Adjust this according to the actual response format
       setSpeechThreadId(response.data.SpeechThread.id); // Store the valid SpeechThread_id
-
+  
       Swal.close();
       markStepAsCompleted(0); // Mark Step 1 as completed
-      setIsSubmitDisabled(true);  // Disable the submit button after successful processing
-
+      setIsSubmitDisabled(true); // Disable the submit button after successful processing
+  
       setIsAnimating(true);
       setTimeout(() => {
         setIsAnimating(false);
       }, 2000); // Duration of the animation
-
+  
     } catch (error) {
       console.error("Error in transcription:", error);
       if (error.response) {
         console.error("Response data:", error.response.data);
         console.error("Response status:", error.response.status);
         console.error("Response headers:", error.response.headers);
+        
+        if (error.response.data.detail) {
+          Swal.fire("Error", error.response.data.detail, "error");
+        } else {
+          Swal.fire(
+            "Error",
+            "Transcription failed: " + (error.response.data.errors ? error.response.data.errors.join(", ") : error.message),
+            "error"
+          );
+        }
+      } else {
         Swal.fire(
           "Error",
-          "Transcription failed: " + error.response.data.errors.join(", "),
+          "Transcription failed: " + error.message,
           "error"
         );
       }
     }
     setIsLiveRecordOpen(!isLiveRecordOpen);
-
   };
+  
 
   const handleDashboardClick = () => {
     history.push("/dashboard");
@@ -862,27 +868,26 @@ toast.success("Copied! The content has been copied to clipboard.", {
                   />
                 </div>
                 <div className="flex flex-col items-center w-full px-4">
-                  {files.length > 0 && (
-                    <div className="flex flex-wrap justify-center items-center mb-4 space-x-4">
-                      {files.map((file, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col items-center space-y-2 mb-2"
-                        >
-                          <div className="bg-[rgba(242,145,27,0.2)] p-2 rounded-lg">
-                            <img
-                              src={FileIcon}
-                              alt={file.name}
-                              className="h-12 w-12"
-                            />
-                          </div>
-                          <p className="text-gray-700 text-xs text-center truncate w-20">
-                            {file.name}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                {files.length > 0 && (
+  <div className="flex flex-wrap justify-center items-center mb-4 space-x-4">
+    {files.map((file, index) => (
+      <div key={index} className="relative flex flex-col items-center space-y-2 mb-2">
+        <div className="relative bg-[rgba(242,145,27,0.2)] p-2 rounded-lg">
+          <img src={FileIcon} alt={file.name} className="h-12 w-12" />
+          <button
+            onClick={() => handleFileRemove(index)}
+            className="absolute -top-2 -right-1 text-red-600 text-base "
+          >
+            <FontAwesomeIcon icon={faTimes} className="h-3 w-3  border-red-600 border rounded-full" />
+          </button>
+        </div>
+        <p className="text-gray-700 text-xs text-center truncate w-20">
+          {file.name}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
                   <input
                     type="file"
                     ref={inputRef}

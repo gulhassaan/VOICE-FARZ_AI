@@ -31,6 +31,20 @@ const OtpVerification = () => {
         }
     };
 
+    const handlePaste = (e) => {
+        const paste = e.clipboardData.getData('text');
+        if (/^\d*$/.test(paste) && paste.length === otp.length) {
+            const newOtp = paste.split('');
+            setOtp(newOtp);
+            newOtp.forEach((value, index) => {
+                if (index < otpRefs.current.length) {
+                    otpRefs.current[index].value = value;
+                }
+            });
+            otpRefs.current[otp.length - 1].focus();
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -69,7 +83,7 @@ const OtpVerification = () => {
                 <h2 className="text-2xl font-bold text-center">OTP Verification</h2>
                 <p className="text-center text-gray-600">Enter the verification code we just sent to your email address.</p>
                 <form className="space-y-4" onSubmit={handleSubmit}>
-                    <div className="flex justify-center space-x-2">
+                    <div className="flex justify-center space-x-2" onPaste={handlePaste}>
                         {otp.map((value, index) => (
                             <input
                                 key={index}
