@@ -179,7 +179,7 @@ const Login = () => {
                     </button>
                     <div className="flex items-center justify-center space-x-4">
                         <div className="border-t w-24"></div>
-                        <span>Or Login with</span>
+                        <span className='text-[#F2911B] text-xs md:text-base lg:text-base'>Or Login with</span>
                         <div className="border-t w-24"></div>
                     </div>
                     <div className="flex items-center justify-center space-x-4 bg-[#f4f4f4]">

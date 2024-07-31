@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown, faAngleUp, faWandMagicSparkles, faShareAlt ,faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAngleDown,
+  faAngleUp,
+  faWandMagicSparkles,
+  faShareAlt,
+  faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -15,6 +21,7 @@ import FileIcon from "../../Assets/images/music-icon.png";
 import Mp4Icon from "../../Assets/images/file-icon.png";
 import Mp3Icon from "../../Assets/images/file-icon.png";
 import YouTubeIcon from "../../Assets/images/youtubeIcon.png";
+import { useHistory } from "react-router-dom";
 
 const ShareHistory = ({ speechThreadId, viewMode = false }) => {
   const [sharableId, setSharableId] = useState(null);
@@ -36,6 +43,7 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
   const generatedPostRef = useRef(null);
 
   const token = localStorage.getItem("token");
+  const history = useHistory();
 
   useEffect(() => {
     if (viewMode && speechThreadId) {
@@ -61,7 +69,11 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
       setHistoryData(response.data);
       updateGeneratedStatus(response.data.speechthread_data);
     } catch (error) {
-      Swal.fire("Error", "Failed to fetch shared history. Please try again later.", "error");
+      Swal.fire(
+        "Error",
+        "Failed to fetch shared history. Please try again later.",
+        "error"
+      );
     }
   };
 
@@ -90,6 +102,7 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
         title,
         content: historyData.speechthread_data[type],
       });
+      scrollToGeneratedPost(); // Scroll to the generated content
       return;
     }
 
@@ -110,19 +123,28 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
         customClass: {
           popup: "w-96 h-64 flex flex-col items-start justify-start p-4",
           title: "text-lg",
-          htmlContainer: "flex flex-col items-center justify-center w-full h-full",
+          htmlContainer:
+            "flex flex-col items-center justify-center w-full h-full",
         },
       });
 
       const apiUrls = {
-        summary: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
-        ebook: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
-        blog_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
-        meeting_notes: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
-        facebook_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
-        twitter_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
-        linkedin_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
-        instagram_post: "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
+        summary:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_summary/",
+        ebook:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_ebook/",
+        blog_post:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_blog_post/",
+        meeting_notes:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_meeting_notes/",
+        facebook_post:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_facebook_post/",
+        twitter_post:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_twitter_post/",
+        linkedin_post:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_linkedin_post/",
+        instagram_post:
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_instagram_post/",
       };
 
       const formData = new FormData();
@@ -156,10 +178,14 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
           content: response.data[type],
         });
         Swal.close();
-        scrollToGeneratedPost();
+        scrollToGeneratedPost(); // Scroll to the generated content
       }
     } catch (error) {
-      Swal.fire("Error", `Failed to generate ${title}. Please try again later.`, "error");
+      Swal.fire(
+        "Error",
+        `Failed to generate ${title}. Please try again later.`,
+        "error"
+      );
     }
   };
 
@@ -188,12 +214,13 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
     }
 
     try {
-      console.log("Sending request to share API with SpeechThread_id:", speechThreadId);
+      console.log(
+        "Sending request to share API with SpeechThread_id:",
+        speechThreadId
+      );
 
       const formData = new FormData();
       formData.append("SpeechThread_id", speechThreadId);
-
-      console.log("Payload:", formData);
 
       const response = await axios.post(
         "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/share_speech_thread/share/",
@@ -205,12 +232,15 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
         }
       );
 
-      console.log("Response from share API:", response.data);
       setSharableId(response.data.id);
       shareHistory(response.data.id);
     } catch (error) {
       console.error("Error getting sharable ID:", error);
-      Swal.fire("Error", "Failed to get sharable ID. Please try again later.", "error");
+      Swal.fire(
+        "Error",
+        "Failed to get sharable ID. Please try again later.",
+        "error"
+      );
     }
   };
 
@@ -231,10 +261,8 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
         }
       );
 
-      console.log("Response from retrieve API:", response.data);
-    //   const link = `http://localhost:3000/shared/${response.data.id}`;
       const link = `https://voice.farz.ai/shared/${response.data.id}`;
-      
+
       setSharedLink(link);
 
       // Show the link in SweetAlert
@@ -251,7 +279,11 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
       });
     } catch (error) {
       console.error("Error sharing history:", error);
-      Swal.fire("Error", "Failed to share history. Please try again later.", "error");
+      Swal.fire(
+        "Error",
+        "Failed to share history. Please try again later.",
+        "error"
+      );
     }
   };
 
@@ -286,12 +318,22 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
         {isStep1Open && (
           <div className="flex flex-wrap space-x-2">
             {files.map((file, index) => (
-              <div key={index} className="relative flex flex-col items-center mb-2">
-                <div className="bg-[rgba(242,145,27,0.2)] p-1 rounded-lg">
-                  <img src={icon} alt={file} className="h-12 w-12 mb-2" />
-                </div>
+              <div
+                key={index}
+                className="relative flex flex-col items-center mb-2"
+              >
+                {icon && (
+                  <div className="bg-[rgba(242,145,27,0.2)] p-1 rounded-lg">
+                    <img src={icon} alt={file} className="h-12 w-12 mb-2" />
+                  </div>
+                )}
                 {typeof file === "string" ? (
-                  <a href={file} target="_blank" rel="noopener noreferrer" className="text-gray-700 text-sm mt-2">
+                  <a
+                    href={file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-orange-500 text-opacity-50 text-sm mt-2"
+                  >
                     {file}
                   </a>
                 ) : (
@@ -305,25 +347,42 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
     );
 
     return (
-      <div className="container mx-auto px-0">
+      <div className="container mx-auto px-0 relative">
         <div className="flex flex-col items-center mt-4 py-10 bg-[#E8ECF4] rounded-2xl">
           <div className="space-y-6 mx-auto w-full max-w-5xl px-0">
-             {/* Title, Date, and Message Section */}
-             <div className="text-left mb-6">
-  <h1 className="text-3xl font-bold">{speechthread_data.title}</h1>
-  <p className="text-gray-500">{new Date(speechthread_data.updated_at).toLocaleDateString()}</p>
-  <div className="mt-2 p-4 bg-orange-50 text-gray-700 rounded-md flex items-start">
-    <FontAwesomeIcon icon={faInfoCircle} className="w-5 h-5 text-black mr-2" />
-    <p>This conversation may reflect the link creator’s personalized data, which isn’t shared and can meaningfully change how the model responds.</p>
-  </div>
-  <hr className="mt-4 border-gray-300" />
-</div>
+            {/* Title, Date, and Message Section */}
+            <div className="text-left mb-6">
+              <h1 className="text-3xl font-bold">{speechthread_data.title}</h1>
+              <p className="text-gray-500">
+                {new Date(speechthread_data.updated_at).toLocaleDateString()}
+              </p>
+              <div className="mt-2 p-4 bg-orange-50 bg-opacity-75 text-gray-700 rounded-md flex items-start">
+                <FontAwesomeIcon
+                  icon={faInfoCircle}
+                  className="w-5 h-5 text-[#cfbebe] mr-2"
+                />
+                <p>
+                  This conversation may reflect the link creator’s personalized
+                  data, which isn’t shared and can meaningfully change how the
+                  model responds.
+                </p>
+              </div>
+              <hr className="mt-4 border-gray-300" />
+            </div>
 
             {speechthread_data.recording_file_names.length > 0 &&
-              renderFileSection("Dynamic Audio Files", speechthread_data.recording_file_names, FileIcon)}
+              renderFileSection(
+                "Dynamic Audio Files",
+                speechthread_data.recording_file_names,
+                FileIcon
+              )}
 
             {speechthread_data.youtube_links.length > 0 &&
-              renderFileSection("YouTube Links", speechthread_data.youtube_links, YouTubeIcon)}
+              renderFileSection(
+                "YouTube Links",
+                speechthread_data.youtube_links,
+                null
+              )}
 
             <div className="relative bg-white shadow-md rounded-3xl p-6">
               <div
@@ -353,14 +412,18 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
                         }`}
                       >
                         <button
-                          onClick={() => handleGenerateContent(option.type, option.title)}
+                          onClick={() =>
+                            handleGenerateContent(option.type, option.title)
+                          }
                           className={`text-white px-4 py-2 rounded-3xl transition-colors duration-300 ${
                             generatedStatus[option.type]
                               ? "bg-gray-700"
                               : "bg-[#F2911B] hover:bg-[#e57d0e]"
                           }`}
                         >
-                          {generatedStatus[option.type] ? `Generated ${option.title}` : `Generate `}
+                          {generatedStatus[option.type]
+                            ? `Generated ${option.title}`
+                            : `Generate `}
                           <FontAwesomeIcon
                             icon={faWandMagicSparkles}
                             className="text-white ml-2"
@@ -387,7 +450,9 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
                 ref={generatedPostRef}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <p className="font-bold text-lg">Generated {generatedContent.title}</p>
+                  <p className="font-bold text-lg">
+                    Generated {generatedContent.title}
+                  </p>
                   <div className="flex items-center space-x-2">
                     {/* Additional buttons or actions can be added here */}
                   </div>
@@ -395,13 +460,23 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
                 <div className="p-4 rounded-lg overflow-auto text-sm">
                   <div
                     className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedContent.content }}
+                    dangerouslySetInnerHTML={{
+                      __html: generatedContent.content,
+                    }}
                   />
                 </div>
               </div>
             )}
           </div>
         </div>
+        <button
+          onClick={() => history.push("/")}
+          className="fixed bottom-0 left-0 w-full bg-[#2e2b2b] bg-opacity-30 text-white py-3 shadow-black shadow-2xl text-center "
+        >
+          <span className="text-black hover:text-white p-2 hover:bg-orange-400 rounded-full hover:border">
+            Get started with Voice FARZ AI
+          </span>
+        </button>
       </div>
     );
   }
@@ -409,9 +484,12 @@ const ShareHistory = ({ speechThreadId, viewMode = false }) => {
   return (
     <div>
       {!viewMode && (
-        <button onClick={getSharableId} className="absolute right-24 top-24 md:top-24 md:right-32 lg:top-10 lg:right-28 border-2 text-white hover:border-[#F2911B] hover:bg-transparent bg-[#F2911B] hover:text-[#F2911B] rounded-3xl px-4 py-2">
-           <FontAwesomeIcon className="mr-2" icon={faShareAlt} />
-           <span>Share History</span>
+        <button
+          onClick={getSharableId}
+          className="absolute right-24 top-24 md:top-24 md:right-32 lg:top-10 lg:right-28 border-2 text-white hover:border-[#F2911B] hover:bg-transparent bg-[#F2911B] hover:text-[#F2911B] rounded-3xl px-4 py-2"
+        >
+          <FontAwesomeIcon className="mr-2" icon={faShareAlt} />
+          <span>Share History</span>
         </button>
       )}
     </div>

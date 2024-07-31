@@ -155,11 +155,43 @@ const YoutubeLink = () => {
     }
   };
 
-  const handleSaveText = () => {
+  const handleSaveText = async () => {
     setIsEditing(false);
     setIsTranscriptOpen(!isTranscriptOpen);
+  
+    try {
+      if (!token) {
+        Swal.fire("Error", "Authentication required. Please login.", "error");
+        return;
+      }
+  
+      const dataToUpdate = {
+        text: transcript,
+        youtube_links: youtubeLinks,
+        status: "completed",
+      };
+  
+      const response = await axios.put(
+        `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${speechThreadId}/update/`,
+        dataToUpdate,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      if (response.status === 200) {
+        toast.success("Content saved successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error("Failed to save content");
+      }
+    } catch (error) {
+      console.error("Error saving generated content:", error);
+    }
   };
-
+  
   const handleYouTubeLinkChange = (index, event) => {
     const newLinks = [...youtubeLinks];
     newLinks[index] = event.target.value;
@@ -501,10 +533,7 @@ const YoutubeLink = () => {
       }
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-      });
+
     }
   };
   

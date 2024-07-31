@@ -216,14 +216,62 @@ const UploadFile = () => {
 
   };
 
-  const handleSaveGeneratedText = () => {
+  const handleSaveGeneratedText = async () => {
     setSavedGeneratedPosts((prev) => ({
       ...prev,
       [generatedPost.title]: generatedPost.content,
     }));
     setGeneratedPost({ ...generatedPost, content: generatedPost.content });
     setIsEditingGenerated(false);
+  
+    try {
+      if (!token) {
+        Swal.fire("Error", "Authentication required. Please login.", "error");
+        return;
+      }
+  
+      const dataToUpdate = {
+        youtube_links: [],
+        recording_file_names: files.map((file) => file.name),
+        multiple_speakers: false,
+        status: "completed",
+        text: transcript,
+        twitter_post: generatedPost.title === "Twitter" ? generatedPost.content : "",
+        facebook_post: generatedPost.title === "Facebook" ? generatedPost.content : "",
+        instagram_post: generatedPost.title === "Instagram" ? generatedPost.content : "",
+        linkedin_post: generatedPost.title === "LinkedIn" ? generatedPost.content : "",
+        meeting_notes: generatedPost.title === "Notes" ? generatedPost.content : "",
+        summary: generatedPost.title === "Summary" ? generatedPost.content : "",
+        whitepaper: "",
+        blog_post: generatedPost.title === "Blog" ? generatedPost.content : "",
+        ebook: generatedPost.title === "eBook" ? generatedPost.content : "",
+        title: "Generated Post",
+        user: 1, // Replace with actual user ID if needed
+        pdf_file: 0,
+        picture_file: 0,
+      };
+  
+      const response = await axios.put(
+        `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${speechThreadId}/update/`,
+        dataToUpdate,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      if (response.status === 200) {
+        toast.success("Content saved successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error("Failed to save content");
+      }
+    } catch (error) {
+      console.error("Error saving generated content:", error);
+    }
   };
+  
   
 
   const handleFileChange = (event) => {
@@ -588,6 +636,7 @@ const UploadFile = () => {
 
        // Trigger scroll after setting generated post
        scrollToGeneratedPost();
+       markStepAsCompleted(1);
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
@@ -665,29 +714,51 @@ toast.success("Copied! The content has been copied to clipboard.", {
     });
   };
 
-  const handleDownloadTextContent = (title, content) => {
-    const doc = new jsPDF();
-    const textContent = stripHtmlTags(content);
-    const textLines = doc.splitTextToSize(textContent, 180); // Adjust the line width to fit the PDF page
-
-    doc.setFontSize(20);
-    doc.text(title, 10, 10);
-    doc.setFontSize(12);
-
-    let y = 20;
-    textLines.forEach((line, index) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
+  const handleDownloadTextContent = async (title, content, speechThreadId) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      toast.error("Authentication required. Please login.");
+      return;
+    }
+  
+    const apiUrl = 'https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_pdf/';
+    const formData = new FormData();
+    formData.append('text', content);
+    formData.append('SpeechThread_id', speechThreadId);
+  
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        responseType: 'blob'
+      });
+  
+      if (response.status === 200 && response.data) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${title}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+        toast.success("PDF downloaded successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error('Failed to generate PDF');
       }
-      doc.text(line, 10, y);
-      y += 10;
-    });
-
-    const dynamicTitle = title;
-    const dynamicPostName = textContent.slice(0, 20).replace(/\s+/g, "_") || "Post";
-    doc.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    
+    }
   };
+  
 
   const handleShareContent = (title, content) => {
     const textContent = stripHtmlTags(content);
@@ -1158,19 +1229,12 @@ toast.success("Copied! The content has been copied to clipboard.", {
                       <FontAwesomeIcon icon={faCopy} className="" />
                     </button>
                     <button
-                      onClick={() =>
-                        handleDownloadTextContent(
-                          generatedPost.title,
-                          generatedPost.content
-                        )
-                      }
-                       className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-                    >
-                      <FontAwesomeIcon
-                        icon={faDownload}
-                        className=""
-                      />
-                    </button>
+  onClick={() => handleDownloadTextContent(generatedPost.title, generatedPost.content, speechThreadId)}
+  className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+>
+  <FontAwesomeIcon icon={faDownload} className="" />
+</button>
+
                     <button
                       onClick={() =>
                         handleShareContent(

@@ -1,33 +1,24 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
-import { IoMdMoon } from "react-icons/io";
-import { FiSettings, FiLogOut } from "react-icons/fi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleDown,
   faAngleUp,
-  faTimes,
   faCopy,
-  faPenToSquare,
   faWandMagicSparkles,
-  faPlay,
   faPause,
   faRedo,
   faEdit,
   faDownload,
-  faPaperPlane,
   faShareAlt,
   faSave,
   faMicrophone,
-  faUpload,
   faStop,
-  faCloudUploadAlt,
 } from "@fortawesome/free-solid-svg-icons";
-
 import axios from "axios";
 import Swal from "sweetalert2";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import Summary from "../../Assets/images/summary1.png";
 import eBook from "../../Assets/images/ebook1.png";
 import Blog from "../../Assets/images/blog1.png";
@@ -36,7 +27,6 @@ import Facebook from "../../Assets/images/facebook1.png";
 import Twitter from "../../Assets/images/twitter1.png";
 import LinkedIn from "../../Assets/images/linkedin1.png";
 import Instagram from "../../Assets/images/instagram1.png";
-import FileIcon from "../../Assets/images/music-icon.png";
 import "../../App.css";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -45,9 +35,9 @@ import { TokenContext } from "../../App";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const getEncodedUrl = (content) => encodeURIComponent(content);
+
 const RecordScreen = () => {
-  // const token = useContext(TokenContext);
-const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const history = useHistory();
   useEffect(() => {
     if (!token) {
@@ -60,9 +50,9 @@ const token = localStorage.getItem("token");
         history.push("/");
       });
     }
-  }, [history]);
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+  }, [history, token]);
 
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
   const currentUrl = window.location.href;
   const [files, setFiles] = useState([]);
   const [isLiveRecordOpen, setIsLiveRecordOpen] = useState(true);
@@ -74,7 +64,7 @@ const token = localStorage.getItem("token");
   const [transcript, setTranscript] = useState("");
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
-  const [isEditing, setIsEditing] = useState(true); // Set default editing mode to true
+  const [isEditing, setIsEditing] = useState(true);
   const [speechThreadId, setSpeechThreadId] = useState(null);
   const [generatedStatus, setGeneratedStatus] = useState([]);
   const [generatedContent, setGeneratedContent] = useState("");
@@ -87,11 +77,10 @@ const token = localStorage.getItem("token");
   const [savedGeneratedPosts, setSavedGeneratedPosts] = useState({});
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
-  const [coverImageName, setCoverImageName] = useState("");
+  const [coverImage, setCoverImage] = useState(null); // Initialize coverImage state
   const uploadedFile = useRef(null);
   const [dummyState, setDummyState] = useState(false);
-  const [isEditingGenerated, setIsEditingGenerated] = useState(true); // Enable editing mode by default for generated content
+  const [isEditingGenerated, setIsEditingGenerated] = useState(true);
   const [isEditingSavedGenerated, setIsEditingSavedGenerated] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("");
   const [generatedPost, setGeneratedPost] = useState(null);
@@ -102,21 +91,20 @@ const token = localStorage.getItem("token");
   const profilePictureInputRef = useRef(null);
   const audioRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
-  const generatedPostRef = useRef(null)
+  const generatedPostRef = useRef(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-const scrollToGeneratedPost = () => {
-  setTimeout(() => {
-    if (generatedPostRef.current) {
-      generatedPostRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest",
-      });
-    }
-  }, 100);
-};
-
+  const scrollToGeneratedPost = () => {
+    setTimeout(() => {
+      if (generatedPostRef.current) {
+        generatedPostRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
+    }, 100);
+  };
 
   let editorInstance = useRef(null);
 
@@ -132,11 +120,14 @@ const scrollToGeneratedPost = () => {
       console.error("No token found. Please login first.");
     } else {
       axios
-        .get("https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/", {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        })
+        .get(
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/profile_picture/",
+          {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          }
+        )
         .then((response) => {
           // setProfilePictureUrl(response.data.image);
         })
@@ -180,128 +171,68 @@ const scrollToGeneratedPost = () => {
     }
   };
 
-  const handleCoverImageChange = (event) => {
-    const file = event.target.files[0];
-    uploadedFile.current = event.target.files[0];
-    if (file) {
-      const validImageTypes = ["image/jpeg", "image/png"];
-      if (validImageTypes.includes(file.type)) {
-        setCoverImageName(file.name);
-        setCoverImage(URL.createObjectURL(file));
-        markStepAsCompleted(2);
-        setIsTranscriptOpen(false);
-      } else {
-        console.error("Invalid file type. Please select a JPG or PNG image.");
-      }
-    }
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      handleCoverImageChange({ target: { files: [file] } });
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    if (!isEditing && editorInstance.current) {
-      const currentContent = editorInstance.current.getData();
-      setGeneratedContent(currentContent);
-    }
-  };
-
-  const handleEditToggleGenerated = () => {
-    setIsEditingGenerated(!isEditingGenerated);
-    if (isEditingGenerated) {
-      setGeneratedContent(generatedPost.content);
-      setSavedGeneratedPosts((prev) => ({
-        ...prev,
-        [generatedPost.title]: generatedPost.content,
-      }));
-    }
-  };
-  
-
-  const handleSaveText = () => {
+  const handleSaveGeneratedText = async () => {
     setSavedGeneratedPosts((prev) => ({
       ...prev,
-      [generatedContent.title]: generatedContent,
+      [generatedPost.title]: generatedPost.content,
     }));
-    setIsEditing(false);
-    markStepAsCompleted(1);
-    setIsTranscriptOpen(!isTranscriptOpen);
-  };
+    setIsEditingGenerated(false);
   
-
- const handleSaveGeneratedText = async () => {
-  setSavedGeneratedPosts((prev) => ({
-    ...prev,
-    [generatedPost.title]: generatedPost.content,
-  }));
-  setIsEditingGenerated(false);
-
-  try {
-    if (!token) {
-      Swal.fire("Error", "Authentication required. Please login.", "error");
-      return;
-    }
-
-    const dataToUpdate = {
-      youtube_links: [],
-      recording_file_names: files.map(file => file.name),
-      multiple_speakers: false,
-      status: "completed",
-      text: transcript,
-      twitter_post: generatedPost.title === "Twitter" ? generatedPost.content : "",
-      facebook_post: generatedPost.title === "Facebook" ? generatedPost.content : "",
-      instagram_post: generatedPost.title === "Instagram" ? generatedPost.content : "",
-      linkedin_post: generatedPost.title === "LinkedIn" ? generatedPost.content : "",
-      meeting_notes: generatedPost.title === "Notes" ? generatedPost.content : "",
-      summary: generatedPost.title === "Summary" ? generatedPost.content : "",
-      whitepaper: "",
-      blog_post: generatedPost.title === "Blog" ? generatedPost.content : "",
-      ebook: generatedPost.title === "eBook" ? generatedPost.content : "",
-      title: "Generated Post",
-      user: 1, // Replace with actual user ID if needed
-      pdf_file: 0,
-      picture_file: 0,
-    };
-
-    const response = await axios.put(
-      `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${speechThreadId}/update/`,
-      dataToUpdate,
-      {
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      if (!token) {
+        Swal.fire("Error", "Authentication required. Please login.", "error");
+        return;
       }
-    );
-
-    if (response.status === 200) {
-      toast.success("Content saved successfully!", {
-        position: "top-right",
-        autoClose: 5000,
-      });
-    } else {
-      throw new Error("Failed to save content");
-    }
-  } catch (error) {
-    console.error("Error saving generated content:", error);
-  }
-};
-
   
+      const dataToUpdate = {
+        youtube_links: [],
+        recording_file_names: files.map((file) => file.name),
+        multiple_speakers: false,
+        status: "completed",
+        text: transcript,
+        twitter_post:
+          generatedPost.title === "Twitter" ? generatedPost.content : "",
+        facebook_post:
+          generatedPost.title === "Facebook" ? generatedPost.content : "",
+        instagram_post:
+          generatedPost.title === "Instagram" ? generatedPost.content : "",
+        linkedin_post:
+          generatedPost.title === "LinkedIn" ? generatedPost.content : "",
+        meeting_notes:
+          generatedPost.title === "Notes" ? generatedPost.content : "",
+        summary: generatedPost.title === "Summary" ? generatedPost.content : "",
+        whitepaper: "",
+        blog_post: generatedPost.title === "Blog" ? generatedPost.content : "",
+        ebook: generatedPost.title === "eBook" ? generatedPost.content : "",
+        title: "Generated Post",
+        user: 1,
+        pdf_file: 0,
+        picture_file: 0,
+      };
+  
+      const response = await axios.put(
+        `https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/speech_history/${speechThreadId}/update/`,
+        dataToUpdate,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      if (response.status === 200) {
+        toast.success("Content saved successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error("Failed to save content");
+      }
+    } catch (error) {
+      console.error("Error saving generated content:", error);
+    }
+  };
 
   const handleFileChange = (event) => {
     setFiles([...files, ...event.target.files]);
-  };
-
-  const handleFileRemove = (index) => {
-    setFiles(files.filter((_, i) => i !== index));
   };
 
   const markStepAsCompleted = (stepIndex) => {
@@ -312,7 +243,6 @@ const scrollToGeneratedPost = () => {
     });
   };
 
-  /**For Audio Start */
   const handleStart = () => {
     if (!isRecording) {
       navigator.mediaDevices
@@ -324,16 +254,17 @@ const scrollToGeneratedPost = () => {
           intervalRef.current = setInterval(() => {
             setTime((prevTime) => prevTime + 1);
           }, 1000);
-  
+
           const newMediaRecorder = new MediaRecorder(stream);
           setMediaRecorder(newMediaRecorder);
-  
+
           newMediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
               setAudioChunks((prevChunks) => [...prevChunks, event.data]);
+              saveRecordingLocally([...audioChunks, event.data]);
             }
           };
-  
+
           newMediaRecorder.start();
         })
         .catch((error) => {
@@ -344,9 +275,7 @@ const scrollToGeneratedPost = () => {
         });
     }
   };
-  
-  
-  /**For Audio Pause */
+
   const handlePause = () => {
     if (isRecording && !isPaused) {
       setIsPaused(true);
@@ -360,7 +289,7 @@ const scrollToGeneratedPost = () => {
       mediaRecorder.resume();
     }
   };
-  /**For Audio Save */
+
   const handleSave = () => {
     if (audioChunks.length > 0) {
       const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
@@ -388,9 +317,8 @@ const scrollToGeneratedPost = () => {
       audioRef.current.src = "";
     }
   };
-  /**For Audio Reset */
+
   const handleReset = () => {
-    // Stop the recording if it's ongoing
     if (isRecording || isPaused) {
       setIsRecording(false);
       setIsPaused(false);
@@ -405,23 +333,21 @@ const scrollToGeneratedPost = () => {
         audioRef.current.src = "";
       }
     }
-  
-    // Reset time and other states
+
     setTime(0);
     setFiles([]);
     setDummyState((prev) => !prev);
-    setIsSubmitDisabled(false); // Enable the submit button when reset
-    setAudioChunks([]); // Clear audio chunks
+    setIsSubmitDisabled(false);
+    setAudioChunks([]);
   };
-  
-  /**For Audio Upload */
+
   const handleUploadClick = async () => {
     if (!token) {
       console.error("No token found. Please login first.");
       alert("Please login to perform this action.");
       return;
     }
-  
+
     let formData = new FormData();
     if (profilePictureUrl) {
       formData.append("profile_picture", profilePictureUrl);
@@ -439,7 +365,7 @@ const scrollToGeneratedPost = () => {
       });
       return;
     }
-  
+
     try {
       const customLoader = `
         <div class="relative flex items-center justify-center overflow-hidden mt-4">
@@ -450,7 +376,7 @@ const scrollToGeneratedPost = () => {
           </div>
         </div>
       `;
-  
+
       const customHeader = `
         <div class="flex justify-between items-center w-full">
           <div class="text-lg">Processing Your Recording</div>
@@ -463,7 +389,7 @@ const scrollToGeneratedPost = () => {
         <hr class="border-gray-300 w-full my-2">
         <p class="text-gray-400 text-xs"> Please hold on for a moment, we are diligently processing your request and ensuring everything is accurate...</p>
       `;
-  
+
       Swal.fire({
         html: `
           ${customHeader}
@@ -483,7 +409,7 @@ const scrollToGeneratedPost = () => {
             .addEventListener("click", () => Swal.close());
         },
       });
-  
+
       const response = await axios.post(
         "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/transcribe/",
         formData,
@@ -494,50 +420,42 @@ const scrollToGeneratedPost = () => {
           },
         }
       );
-  
+
       setTranscript(response.data.SpeechThread.text);
       setSpeechThreadId(response.data.SpeechThread.id);
-  
+
       Swal.close();
       markStepAsCompleted(0);
-      setIsSubmitDisabled(true);  // Disable the submit button after successful processing
-  
-      // Trigger animation
+      setIsSubmitDisabled(true);
+
       setIsAnimating(true);
       setTimeout(() => {
         setIsAnimating(false);
-      }, 2000); // Duration of the animation
+      }, 2000);
     } catch (error) {
       console.error("Error in transcription:", error);
       if (error.response) {
         console.error("Response data:", error.response.data);
         console.error("Response status:", error.response.status);
         console.error("Response headers:", error.response.headers);
-        
+
         if (error.response.data.detail) {
           Swal.fire("Error", error.response.data.detail, "error");
         } else {
           Swal.fire(
             "Error",
-            "Transcription failed: " + (error.response.data.errors ? error.response.data.errors.join(", ") : error.message),
+            "Transcription failed: " +
+              (error.response.data.errors
+                ? error.response.data.errors.join(", ")
+                : error.message),
             "error"
           );
         }
       } else {
-        Swal.fire(
-          "Error",
-          "Transcription failed: " + error.message,
-          "error"
-        );
+        Swal.fire("Error", "Transcription failed: " + error.message, "error");
       }
     }
     setIsLiveRecordOpen(!isLiveRecordOpen);
-  };
-  
-  
-
-  const handleDashboardClick = () => {
-    history.push("/dashboard");
   };
 
   const toggleLiveRecordSection = () => {
@@ -586,9 +504,7 @@ const scrollToGeneratedPost = () => {
       );
       return;
     }
-    const isHtmlContent = ["Summary", "eBook", "Blog", "Notes"].includes(
-      title
-    );
+    const isHtmlContent = ["Summary", "eBook", "Blog", "Notes"].includes(title);
 
     if (savedGeneratedPosts[title]) {
       setGeneratedPost({
@@ -596,7 +512,7 @@ const scrollToGeneratedPost = () => {
         content: savedGeneratedPosts[title],
         isHtmlContent,
       });
-      setIsEditingGenerated(true); // Enable editing mode by default for generated content
+      setIsEditingGenerated(true);
       return;
     }
 
@@ -659,7 +575,7 @@ const scrollToGeneratedPost = () => {
       const contentKeyMap = {
         Instagram: "instagram_post",
         Summary: "summary",
-        "Notes": "meeting_notes",
+        Notes: "meeting_notes",
         Blog: "blog_post",
         eBook: "ebook",
         Facebook: "facebook_post",
@@ -679,11 +595,10 @@ const scrollToGeneratedPost = () => {
       Swal.close();
 
       setGeneratedPost({ title, content: generatedContent, isHtmlContent });
-      setIsEditingGenerated(true); // Enable editing mode by default for generated content
+      setIsEditingGenerated(true);
+      markStepAsCompleted(1);
 
-
-          // Trigger scroll after setting generated post
-          scrollToGeneratedPost();
+      scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
@@ -706,86 +621,71 @@ const scrollToGeneratedPost = () => {
     }
   };
 
-  const handleCopyTranscriptContent = () => {
-    const contentElement = isEditing
-      ? document.querySelector("textarea")
-      : document.querySelector(".transcript-content");
-    if (contentElement) {
-      const content = contentElement.value || contentElement.textContent;
-      navigator.clipboard
-        .writeText(content)
-        .then(() => {
-          // Success toast for copied content
-          toast.success("Copied! The content has been copied to clipboard.", {
-            position: "top-right", // Position can be adjusted as needed
-            autoClose: 5000, // Auto close after 5 seconds
-          });
-        })
-        .catch((err) => {
-          console.error("Failed to copy: ", err);
-        });
-    } else {
-      console.error("No content to copy.");
+  const handleCopyContent = async (content) => {
+    const textContent = stripHtmlTags(content);
+    try {
+      await navigator.clipboard.writeText(textContent);
+      toast.success("Copied! The content has been copied to clipboard.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      toast.error("Failed to copy the content. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
     }
   };
 
-  const handleCopyContent = (content) => {
-    const textContent = stripHtmlTags(content);
-    navigator.clipboard
-      .writeText(textContent)
-      .then(() => {
-        // Success toast for copied content
-        toast.success("Copied! The content has been copied to clipboard.", {
-          position: "top-right", // Position can be adjusted as needed
-          autoClose: 5000, // Auto close after 5 seconds
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to copy:", err);
+  
+
+  const handleDownloadTextContent = async (title, content, speechThreadId) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      toast.error("Authentication required. Please login.");
+      return;
+    }
+  
+    const apiUrl = 'https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/generate_pdf/';
+    const formData = new FormData();
+    formData.append('text', content);
+    formData.append('SpeechThread_id', speechThreadId);
+  
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        responseType: 'blob'
       });
-  };
-
-  const handleDownloadHtmlContent = (title, content) => {
-    const element = document.createElement("div");
-    element.innerHTML = content;
-
-    html2canvas(element).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      pdf.setFontSize(20);
-      pdf.text(title, 10, 10);
-      pdf.addImage(imgData, "PNG", 0, 20, 210, 0);
-      const dynamicTitle = title;
-      const dynamicPostName =
-        content.slice(0, 20).replace(/\s+/g, "_") || "Post";
-      pdf.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
-    });
-  };
-
-  const handleDownloadTextContent = (title, content) => {
-    const doc = new jsPDF();
-    const textContent = stripHtmlTags(content);
-    const textLines = doc.splitTextToSize(textContent, 180); // Adjust the line width to fit the PDF page
-
-    doc.setFontSize(20);
-    doc.text(title, 10, 10);
-    doc.setFontSize(12);
-
-    let y = 20;
-    textLines.forEach((line, index) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
+  
+      if (response.status === 200 && response.data) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${title}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+        toast.success("PDF downloaded successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        throw new Error('Failed to generate PDF');
       }
-      doc.text(line, 10, y);
-      y += 10;
-    });
-
-    const dynamicTitle = title;
-    const dynamicPostName =
-      textContent.slice(0, 20).replace(/\s+/g, "_") || "Post";
-    doc.save(`${dynamicTitle}_${dynamicPostName}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+     
+    }
   };
+  
+  
 
   const handleShareContent = (title, content) => {
     const textContent = stripHtmlTags(content);
@@ -883,62 +783,19 @@ const scrollToGeneratedPost = () => {
     setProfilePicture(storedProfilePicture || "");
   }, []);
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    history.push("/");
-  };
-
   const stripHtmlTags = (html) => {
     let doc = new DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
   };
 
+  const saveRecordingLocally = (chunks) => {
+    const audioBlob = new Blob(chunks, { type: "audio/wav" });
+    const url = URL.createObjectURL(audioBlob);
+    localStorage.setItem("recording", url);
+  };
+
   return (
     <div className="container mx-auto px-0">
-      {/* <div className="flex mt-4 flex-col-reverse md:flex-row justify-between items-center bg-white border-b-2 lg:pb-2">
-        <div className="flex items-center mb-4 md:mb-0">
-          <p
-            className="text-lg font-semibold mt-2 cursor-pointer"
-            onClick={handleDashboardClick}
-          >
-            Dashboard &gt; <span className="text-gray-400">Live Recording</span>
-          </p>
-        </div>
-        <div className="relative">
-          <button
-            className="flex items-center justify-center w-12 h-12 bg-[#F2911B] rounded-full"
-            onClick={toggleDropdown}
-          >
-            {profilePicture ? (
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className="w-10 h-10 rounded-full"
-              />
-            ) : (
-              <span className="text-xl font-bold text-gray-700">
-                {username.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </button>
-          {dropdownVisible && (
-            <div className="absolute -right-16 md:right-0 lg:right-0 mt-2 w-48 bg-white border rounded-2xl shadow-lg">
-              <button
-                className="flex items-center w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 hover:text-[#F2911B]"
-                onClick={handleLogout}
-              >
-                <FiLogOut className="mr-2" />
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </div> */}
-
       <p
         className="text-lg font-semibold my-4 cursor-pointer"
         onClick={() =>
@@ -946,13 +803,6 @@ const scrollToGeneratedPost = () => {
           profilePictureInputRef.current.click()
         }
       >
-        {/* <span className="border-2 border-[#F2911B] text-[#F2911B] rounded-full px-4 py-2 text-base">
-          <FontAwesomeIcon
-            className="text-[#F2911B] text-base"
-            icon={faUpload}
-          />{" "}
-          Upload Photo
-        </span> */}
         {profilePictureName && (
           <span className="ml-2 text-sm text-gray-600">
             {profilePictureName}
@@ -1053,18 +903,20 @@ const scrollToGeneratedPost = () => {
                           )}
                         </div>
                         {audioChunks.length > 0 && (
-  <div className="mt-4 pt-8">
-    <button
-      onClick={handleUploadClick}
-      className={`bg-${isSubmitDisabled ? "gray-400 cursor-not-allowed" : "[#F2911B]"} text-white px-6 py-2 rounded-3xl w-full lg:w-auto border-2 hover:text-[#f2911b] hover:bg-white hover:border-[#f2911b]`}
-      disabled={isSubmitDisabled}  // Disable the button based on the state
-    >
-      Submit
-    </button>
-  </div>
-)}
-
-
+                          <div className="mt-4 pt-8">
+                            <button
+                              onClick={handleUploadClick}
+                              className={`bg-${
+                                isSubmitDisabled
+                                  ? "gray-400 cursor-not-allowed"
+                                  : "[#F2911B]"
+                              } text-white px-6 py-2 rounded-3xl w-full lg:w-auto border-2 hover:text-[#f2911b] hover:bg-white hover:border-[#f2911b]`}
+                              disabled={isSubmitDisabled}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1086,17 +938,7 @@ const scrollToGeneratedPost = () => {
                         <div
                           key={index}
                           className="relative flex flex-col items-center mb-2"
-                        >
-                          {/* <button
-                            className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
-                            onClick={() => handleFileRemove(index)}
-                          >
-                            <FontAwesomeIcon
-                              icon={faTimes}
-                              className="text-xs"
-                            />
-                          </button> */}
-                        </div>
+                        ></div>
                       ))}
                     </div>
                   </div>
@@ -1105,116 +947,53 @@ const scrollToGeneratedPost = () => {
             </div>
           </div>
 
-
-<div className="hidden">
-<div className="flex items-start ">
-            <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
-              <div
-                className={`flex items-center justify-between mb-4 cursor-pointer ${
-                  isTranscriptOpen ? "bg-transparent" : ""
-                }`}
-                onClick={toggleTranscriptSection}
-              >
-                <div className="flex items-center space-x-2">
-                  <span
-                    className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                      1
-                    )}`}
-                  >
-                    2
-                  </span>
-                  <p className="font-bold text-lg">Transcript</p>
-                </div>
-                <FontAwesomeIcon
-                  icon={isTranscriptOpen ? faAngleUp : faAngleDown}
-                />
-              </div>
-              {isTranscriptOpen && (
-                <div>
-                  {isEditing ? (
-                    <textarea
-                      className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg"
-                      value={transcript}
-                      onChange={(e) => setTranscript(e.target.value)}
-                    />
-                  ) : (
-                    <div className="w-full h-48 p-2 transcript-content rounded-lg overflow-auto">
-                      {transcript}
-                    </div>
-                  )}
-                
-                </div>
-              )}
-            </div>
-          </div>
-</div>
-        
-
-          {/* 
-          <div className="flex items-start">
-            <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
-              <div
-                className={`flex items-center justify-between mb-4 cursor-pointer ${
-                  isGenerateOpen ? "bg-transparent" : ""
-                }`}
-                onClick={toggleGenerateSection}
-              >
-                <div className="flex items-center space-x-2">
-                  <span
-                    className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                      2
-                    )}`}
-                  >
-                    3
-                  </span>
-                  <p className="font-bold text-lg">Upload Cover (Optional)</p>
-                </div>
-                <FontAwesomeIcon
-                  icon={isGenerateOpen ? faAngleUp : faAngleDown}
-                />
-              </div>
-              {isGenerateOpen && (
+          <div className="hidden">
+            <div className="flex items-start ">
+              <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
                 <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
+                  className={`flex items-center justify-between mb-4 cursor-pointer ${
+                    isTranscriptOpen ? "bg-transparent" : ""
+                  }`}
+                  onClick={toggleTranscriptSection}
                 >
-                  <div className="flex flex-col items-center w-full mt-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      ref={coverImageInputRef}
-                      className="hidden"
-                      onChange={handleCoverImageChange}
-                    />
-                    {coverImage ? (
-                      <div className="relative flex flex-col items-center mb-2">
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg"
-                        />
-                        <button
-                          className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
-                          onClick={() => setCoverImage(null)}
-                        >
-                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
-                        </button>
-                      </div>
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+                        1
+                      )}`}
+                    >
+                      2
+                    </span>
+                    <p className="font-bold text-lg">Transcript</p>
+                  </div>
+                  <FontAwesomeIcon
+                    icon={isTranscriptOpen ? faAngleUp : faAngleDown}
+                  />
+                </div>
+                {isTranscriptOpen && (
+                  <div>
+                    {isEditing ? (
+                      <textarea
+                        className="w-full h-48 p-2 bg-gray-100 border border-gray-300 rounded-lg"
+                        value={transcript}
+                        onChange={(e) => setTranscript(e.target.value)}
+                      />
                     ) : (
-                      <div
-                        className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
-                        onClick={() => coverImageInputRef.current.click()}
-                      >
-                        <p className="text-gray-400">Drag & Drop file here</p>
+                      <div className="w-full h-48 p-2 transcript-content rounded-lg overflow-auto">
+                        {transcript}
                       </div>
                     )}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div> */}
+          </div>
 
-<div className={`flex items-start ${isAnimating ? "animate-zoomIn" : ""}`}>
+          <div
+            className={`flex items-start ${
+              isAnimating ? "animate-zoomIn" : ""
+            }`}
+          >
             <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
               <div
                 className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -1294,109 +1073,102 @@ const scrollToGeneratedPost = () => {
           </div>
 
           {generatedPost && (
-  <div className="flex flex-col mt-8" id={generatedPost.title} ref={generatedPostRef}>
-    <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
-      <div className="flex items-center justify-between mb-4">
-        <p className="font-bold text-lg">
-          {" "}
-          Generated {generatedPost.title}
-        </p>
-        <div className="flex items-center space-x-2">
-          {isEditingGenerated ? (
-            <button
-              onClick={handleSaveGeneratedText}
-              className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-            >
-              <FontAwesomeIcon icon={faSave} className="" />
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsEditingGenerated(true)}
-              className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-            >
-              <FontAwesomeIcon icon={faEdit} className="" />
-            </button>
-          )}
-
-          <button
-            onClick={() => handleCopyContent(generatedPost.content)}
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-          >
-            <FontAwesomeIcon icon={faCopy} className="" />
-          </button>
-          <button
-            onClick={() =>
-              handleDownloadTextContent(
-                generatedPost.title,
-                generatedPost.content
-              )
-            }
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-          >
-            <FontAwesomeIcon
-              icon={faDownload}
-              className=""
-            />
-          </button>
-          <button
-            onClick={() =>
-              handleShareContent(
-                generatedPost.title,
-                generatedPost.content
-              )
-            }
-            className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
-          >
-            <FontAwesomeIcon
-              icon={faShareAlt}
-              className=""
-            />
-          </button>
-        </div>
-      </div>
-      <div className="p-4  rounded-lg overflow-auto text-sm">
-        {isEditingGenerated ? (
-          <ReactQuill
-            value={generatedPost.content}
-            onChange={(content) => {
-              setGeneratedPost({ ...generatedPost, content });
-            }}
-          />
-        ) : generatedPost.isHtmlContent ? (
-          <>
-            {coverImage && (
-              <img
-                src={coverImage}
-                alt="Cover"
-                className="h-48 w-full object-cover rounded-lg mb-4"
-              />
-            )}
             <div
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: generatedPost.content,
-              }}
-            />
-          </>
-        ) : (
-          <>
-            {coverImage && (
-              <img
-                src={coverImage}
-                alt="Cover"
-                className="h-48 w-full object-cover rounded-lg mb-4"
-              />
-            )}
-            <div className="whitespace-pre-wrap">
-              {stripHtmlTags(generatedPost.content)}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+              className="flex flex-col mt-8"
+              id={generatedPost.title}
+              ref={generatedPostRef}
+            >
+              <div className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="font-bold text-lg">
+                    {" "}
+                    Generated {generatedPost.title}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    {isEditingGenerated ? (
+                      <button
+                        onClick={handleSaveGeneratedText}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                      >
+                        <FontAwesomeIcon icon={faSave} className="" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setIsEditingGenerated(true)}
+                        className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                      >
+                        <FontAwesomeIcon icon={faEdit} className="" />
+                      </button>
+                    )}
 
+                    <button
+                      onClick={() => handleCopyContent(generatedPost.content)}
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                    >
+                      <FontAwesomeIcon icon={faCopy} className="" />
+                    </button>
+                    <button
+  onClick={() => handleDownloadTextContent(generatedPost.title, generatedPost.content, speechThreadId)}
+  className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+>
+  <FontAwesomeIcon icon={faDownload} className="" />
+</button>
+
+                    <button
+                      onClick={() =>
+                        handleShareContent(
+                          generatedPost.title,
+                          generatedPost.content
+                        )
+                      }
+                      className="flex items-center justify-center w-10 h-10 bg-[#F2911B] rounded-full hover:bg-white text-white hover:text-[#F2911B] border-2 border-[#F2911B]"
+                    >
+                      <FontAwesomeIcon icon={faShareAlt} className="" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-4  rounded-lg overflow-auto text-sm">
+                  {isEditingGenerated ? (
+                    <ReactQuill
+                      value={generatedPost.content}
+                      onChange={(content) => {
+                        setGeneratedPost({ ...generatedPost, content });
+                      }}
+                    />
+                  ) : generatedPost.isHtmlContent ? (
+                    <>
+                      {coverImage && (
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg mb-4"
+                        />
+                      )}
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: generatedPost.content,
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {coverImage && (
+                        <img
+                          src={coverImage}
+                          alt="Cover"
+                          className="h-48 w-full object-cover rounded-lg mb-4"
+                        />
+                      )}
+                      <div className="whitespace-pre-wrap">
+                        {stripHtmlTags(generatedPost.content)}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
