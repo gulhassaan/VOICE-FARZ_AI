@@ -166,6 +166,7 @@ const UploadFile = () => {
     }
   };
 
+
   const handleCoverImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -173,6 +174,28 @@ const UploadFile = () => {
       if (validImageTypes.includes(file.type)) {
         setCoverImageName(file.name);
         setCoverImage(URL.createObjectURL(file));
+        
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("SpeechThread_id", speechThreadId);
+  
+        axios.post(
+          "https://voiceamplifiedbackendserver.eastus.cloudapp.azure.com/picture_upload/",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: "Bearer " + token,
+            },
+          }
+        )
+        .then(response => {
+          console.log("Image uploaded successfully:", response.data);
+          // Handle successful upload if needed
+        })
+        .catch(error => {
+          console.error("Error uploading image:", error);
+        });
       } else {
         console.error("Invalid file type. Please select a JPG or PNG image.");
       }
@@ -181,6 +204,7 @@ const UploadFile = () => {
     setIsCoverUploadOpen(!isCoverUploadOpen);
     setIsGenerateOpen(!isGenerateOpen);
   };
+  
   const handleRemoveCoverImage = () => {
     setCoverImage(null);
     setCoverImageName("");
@@ -1265,11 +1289,11 @@ toast.success("Copied! The content has been copied to clipboard.", {
                   ) : generatedPost.isHtmlContent ? (
                     <>
                       {coverImage && (
-                   <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                   <div className="h-60 w-full mb-4 overflow-y-auto scrollbar-custom rounded-2xl">
                    <img
                      src={coverImage}
                      alt="Cover"
-                     className="w-full object-cover rounded-lg"
+                     className="w-full object-cover rounded-2xl"
                    />
                  </div>
                  
@@ -1285,11 +1309,11 @@ toast.success("Copied! The content has been copied to clipboard.", {
                   ) : (
                     <>
                     {coverImage && (
-                       <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                       <div className="h-60 w-full mb-4 overflow-y-auto scrollbar-custom rounded-2xl">
                        <img
                          src={coverImage}
                          alt="Cover"
-                         className="w-full object-cover rounded-lg"
+                         className="w-full object-cover rounded-2xl"
                        />
                      </div>
                     )}

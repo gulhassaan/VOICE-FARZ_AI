@@ -321,6 +321,7 @@ const Sidebar = () => {
             ) : filteredTitles.length === 0 ? (
               <div className="text-gray-500 text-xm mt-4 pt-4">
                 No History Available
+                
               </div>
             ) : (
               <>

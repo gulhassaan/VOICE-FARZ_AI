@@ -19,6 +19,8 @@ import 'react-quill/dist/quill.snow.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ShareHistory from './ShareHistory'; // Import the ShareHistory component
+import Loading from '../../Assets/images/loading.svg'
+import Nothing from '../../Assets/images/nothing.svg'
 
 const HistoryDetails = () => {
   const { id } = useParams();
@@ -381,11 +383,25 @@ const HistoryDetails = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+    <div style={{ textAlign: 'center' }}>
+      <div>Loading...</div>
+      <div>
+        <img src={Loading} alt="Loading" />
+      </div>
+    </div>
+  </div>;
   }
 
   if (!historyDetails) {
-    return <div>No history details found.</div>;
+    return  <div class="flex items-center justify-center h-screen">
+    <div class="text-center">
+        <img class="w-1/2 h-1/2 mx-auto" src={Nothing} alt="Loading" />
+        <div>No History detail found</div>
+    </div>
+</div>
+
+;
   }
 
   const Username = localStorage.getItem("Username");
@@ -618,16 +634,21 @@ const HistoryDetails = () => {
                     ref={editorInstance}
                   />
                 ) : (
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: regenerating ? "Generating content..." : generatedContent.content }}
-                  />
+                  <div>
+                    {historyDetails.picturefile_url && (
+                        <div className="h-60 w-full mb-4 overflow-y-auto rounded-2xl scrollbar-custom">
+                        <img src={historyDetails.picturefile_url} alt="Generated Content" className="w-full h-auto rounded-2xl" />
+                      </div>
+                    )}
+                    <div
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: regenerating ? "Generating content..." : generatedContent.content }}
+                    />
+                  </div>
                 )}
               </div>
             </div>
           )}
-
-
 
         </div>
       </div>
