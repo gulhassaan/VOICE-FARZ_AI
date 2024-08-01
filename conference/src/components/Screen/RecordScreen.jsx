@@ -8,6 +8,7 @@ import {
   faWandMagicSparkles,
   faPause,
   faRedo,
+  faTimes,
   faEdit,
   faDownload,
   faShareAlt,
@@ -57,7 +58,8 @@ const RecordScreen = () => {
   const [files, setFiles] = useState([]);
   const [isLiveRecordOpen, setIsLiveRecordOpen] = useState(true);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(true);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [isImgOpen, setIsImgOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [time, setTime] = useState(0);
@@ -78,6 +80,7 @@ const RecordScreen = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
   const [coverImage, setCoverImage] = useState(null); // Initialize coverImage state
+  const [coverImageName, setCoverImageName] = useState("");
   const uploadedFile = useRef(null);
   const [dummyState, setDummyState] = useState(false);
   const [isEditingGenerated, setIsEditingGenerated] = useState(true);
@@ -456,6 +459,7 @@ const RecordScreen = () => {
       }
     }
     setIsLiveRecordOpen(!isLiveRecordOpen);
+    setIsImgOpen(!isImgOpen);
   };
 
   const toggleLiveRecordSection = () => {
@@ -469,6 +473,9 @@ const RecordScreen = () => {
 
   const toggleGenerateSection = () => {
     setIsGenerateOpen(!isGenerateOpen);
+  };
+  const toggleImgSection = () => {
+    setIsImgOpen(!isImgOpen);
   };
 
   useEffect(() => {
@@ -596,7 +603,7 @@ const RecordScreen = () => {
 
       setGeneratedPost({ title, content: generatedContent, isHtmlContent });
       setIsEditingGenerated(true);
-      markStepAsCompleted(1);
+      markStepAsCompleted(2);
 
       scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
@@ -793,7 +800,28 @@ const RecordScreen = () => {
     const url = URL.createObjectURL(audioBlob);
     localStorage.setItem("recording", url);
   };
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const validImageTypes = ["image/jpeg", "image/png"];
+      if (validImageTypes.includes(file.type)) {
+        setCoverImageName(file.name);
+        setCoverImage(URL.createObjectURL(file));
+      } else {
+        console.error("Invalid file type. Please select a JPG or PNG image.");
+      }
+    }
+    markStepAsCompleted(1);
+    setIsImgOpen(!isImgOpen);
+    setIsGenerateOpen(!isGenerateOpen)
 
+  };
+  
+  // Add this function with other functions
+  const handleRemoveCoverImage = () => {
+    setCoverImage(null);
+    setCoverImageName("");
+  };
   return (
     <div className="container mx-auto px-0">
       <p
@@ -947,6 +975,8 @@ const RecordScreen = () => {
             </div>
           </div>
 
+
+
           <div className="hidden">
             <div className="flex items-start ">
               <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
@@ -989,6 +1019,101 @@ const RecordScreen = () => {
             </div>
           </div>
 
+
+
+
+
+
+
+
+          <div className="flex items-start">
+  <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
+    <div
+      className={`flex items-center justify-between mb-4 cursor-pointer ${
+        isImgOpen ? "bg-transparent" : ""
+      }`}
+      onClick={() => setIsImgOpen(!isImgOpen)}
+    >
+      <div className="flex items-center space-x-2">
+        <span
+          className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+            1
+          )}`}
+        >
+          2
+        </span>
+        <p className="font-bold text-lg">Upload Image (Optional)</p>
+      </div>
+      <FontAwesomeIcon
+        icon={isImgOpen ? faAngleUp : faAngleDown}
+      />
+    </div>
+    {isImgOpen && (
+      <div className="flex flex-col items-center w-full mt-4">
+        <input
+          type="file"
+          accept="image/*"
+          ref={coverImageInputRef}
+          className="hidden"
+          onChange={handleCoverImageChange}
+        />
+        {coverImage ? (
+          <div className="relative flex flex-col items-center mb-2">
+            <img
+              src={coverImage}
+              alt="Cover"
+              className="h-48 w-full object-cover rounded-lg"
+            />
+            <button
+              className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
+              onClick={handleRemoveCoverImage}
+            >
+              <FontAwesomeIcon icon={faTimes} className="text-xs" />
+            </button>
+          </div>
+        ) : (
+          <div
+            className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
+            onClick={() => coverImageInputRef.current.click()}
+          >
+            <p className="text-gray-400">Click or Drag & Drop file here</p>
+          </div>
+        )}
+        {coverImageName && (
+          <span className="mt-2 text-sm text-gray-600">
+            {coverImageName}
+          </span>
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div
             className={`flex items-start ${
               isAnimating ? "animate-zoomIn" : ""
@@ -1004,10 +1129,10 @@ const RecordScreen = () => {
                 <div className="flex items-center space-x-2">
                   <span
                     className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                      1
+                     2
                     )}`}
                   >
-                    2
+                    3
                   </span>
                   <p className="font-bold text-lg">Generate</p>
                 </div>
@@ -1138,11 +1263,15 @@ const RecordScreen = () => {
                   ) : generatedPost.isHtmlContent ? (
                     <>
                       {coverImage && (
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg mb-4"
-                        />
+                   <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                   <img
+                     src={coverImage}
+                     alt="Cover"
+                     className="w-full object-cover rounded-lg"
+                   />
+                 </div>
+                 
+                     
                       )}
                       <div
                         className="prose max-w-none"
@@ -1154,11 +1283,13 @@ const RecordScreen = () => {
                   ) : (
                     <>
                       {coverImage && (
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg mb-4"
-                        />
+                         <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                         <img
+                           src={coverImage}
+                           alt="Cover"
+                           className="w-full object-cover rounded-lg"
+                         />
+                       </div>
                       )}
                       <div className="whitespace-pre-wrap">
                         {stripHtmlTags(generatedPost.content)}

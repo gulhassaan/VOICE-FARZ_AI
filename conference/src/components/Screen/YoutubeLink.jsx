@@ -56,7 +56,8 @@ const YoutubeLink = () => {
   const [isYouTubeLinkOpen, setIsYouTubeLinkOpen] = useState(true);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
   const [isUploadCoverOpen, setIsUploadCoverOpen] = useState(true);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(true);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [isImgOpen, setIsImgOpen] = useState(false);
   const [youtubeLinks, setYoutubeLinks] = useState([""]);
   const [transcript, setTranscript] = useState("");
   const [isEditing, setIsEditing] = useState(true); // Set to true by default
@@ -68,6 +69,7 @@ const YoutubeLink = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [profilePictureName, setProfilePictureName] = useState("");
   const [coverImage, setCoverImage] = useState(null);
+  const [coverImageName, setCoverImageName] = useState("");
   const profilePictureInputRef = useRef(null);
   const coverImageInputRef = useRef(null);
   const Username = localStorage.getItem("Username") || "User";
@@ -297,7 +299,6 @@ const YoutubeLink = () => {
 
       Swal.close();
       markStepAsCompleted(0);
-      markStepAsCompleted(1);
       setIsSubmitDisabled(true); // Disable submit button after successful submission
     
     
@@ -332,6 +333,7 @@ const YoutubeLink = () => {
     }
   }
     setIsYouTubeLinkOpen(!isYouTubeLinkOpen);
+    setIsImgOpen(!isImgOpen);
   };
 
   const handleCopyContent = (content) => {
@@ -458,7 +460,7 @@ const YoutubeLink = () => {
         ...prev,
         [title]: generatedContent,
       }));
-  
+      markStepAsCompleted(2);
       // Trigger scroll after setting generated post
       scrollToGeneratedPost();
       const updatedStatus = [...generatedStatus];
@@ -651,7 +653,7 @@ const YoutubeLink = () => {
   };
   const toggleTranscriptSection = () => {
     setIsTranscriptOpen(!isTranscriptOpen);
-    markStepAsCompleted(1);
+
   };
 
   const handleLogout = () => {
@@ -665,6 +667,27 @@ const YoutubeLink = () => {
   };
   const handleDashboardClick = () => {
     history.push("/dashboard");
+  };
+  const handleCoverImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const validImageTypes = ["image/jpeg", "image/png"];
+      if (validImageTypes.includes(file.type)) {
+        setCoverImageName(file.name);
+        setCoverImage(URL.createObjectURL(file));
+      } else {
+        console.error("Invalid file type. Please select a JPG or PNG image.");
+      }
+    }
+    setIsImgOpen(!isImgOpen);
+    setIsGenerateOpen(!isGenerateOpen);
+    markStepAsCompleted(1);
+  };
+  
+  // Add this function with other functions
+  const handleRemoveCoverImage = () => {
+    setCoverImage(null);
+    setCoverImageName("");
   };
 
   return (
@@ -871,68 +894,68 @@ const YoutubeLink = () => {
           </div>
           </div>
         
-          {/* <div className="flex items-start">
-            <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
-              <div
-                className={`flex items-center justify-between mb-4 cursor-pointer ${
-                  isUploadCoverOpen ? "bg-transparent" : ""
-                }`}
-                onClick={() => setIsUploadCoverOpen(!isUploadCoverOpen)}
-              >
-                <div className="flex items-center space-x-2">
-                  <span
-                    className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                      2
-                    )}`}
-                  >
-                    3
-                  </span>
-                  <p className="font-bold text-lg">Upload Cover (Optional)</p>
-                </div>
-                <FontAwesomeIcon
-                  icon={isUploadCoverOpen ? faAngleUp : faAngleDown}
-                />
-              </div>
-              {isUploadCoverOpen && (
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                >
-                  <div className="flex flex-col items-center w-full mt-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      ref={coverImageInputRef}
-                      className="hidden"
-                      onChange={handleCoverImageChange}
-                    />
-                    {coverImage ? (
-                      <div className="relative flex flex-col items-center mb-2">
-                        <img
-                          src={coverImage}
-                          alt="Cover"
-                          className="h-48 w-full object-cover rounded-lg"
-                        />
-                        <button
-                          className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
-                          onClick={() => setCoverImage(null)}
-                        >
-                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
-                        onClick={() => coverImageInputRef.current.click()}
-                      >
-                        <p className="text-gray-400">Drag & Drop file here</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div> */}
+          <div className="flex items-start">
+  <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
+    <div
+      className={`flex items-center justify-between mb-4 cursor-pointer ${
+        isImgOpen ? "bg-transparent" : ""
+      }`}
+      onClick={() => setIsImgOpen(!isImgOpen)}
+    >
+      <div className="flex items-center space-x-2">
+        <span
+          className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
+           1
+          )}`}
+        >
+          2
+        </span>
+        <p className="font-bold text-lg">Upload Image (Optional)</p>
+      </div>
+      <FontAwesomeIcon
+        icon={isImgOpen ? faAngleUp : faAngleDown}
+      />
+    </div>
+    {isImgOpen && (
+      <div className="flex flex-col items-center w-full mt-4">
+        <input
+          type="file"
+          accept="image/*"
+          ref={coverImageInputRef}
+          className="hidden"
+          onChange={handleCoverImageChange}
+        />
+        {coverImage ? (
+          <div className="relative flex flex-col items-center mb-2">
+            <img
+              src={coverImage}
+              alt="Cover"
+              className="h-48 w-full object-cover rounded-lg"
+            />
+            <button
+              className="absolute -top-2 -right-1 text-red-600 border-solid border p-2 border-red-600 rounded-full h-1 w-1 flex items-center justify-center"
+              onClick={handleRemoveCoverImage}
+            >
+              <FontAwesomeIcon icon={faTimes} className="text-xs" />
+            </button>
+          </div>
+        ) : (
+          <div
+            className="h-48 w-full border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg cursor-pointer"
+            onClick={() => coverImageInputRef.current.click()}
+          >
+            <p className="text-gray-400">Click or Drag & Drop file here</p>
+          </div>
+        )}
+        {coverImageName && (
+          <span className="mt-2 text-sm text-gray-600">
+            {coverImageName}
+          </span>
+        )}
+      </div>
+    )}
+  </div>
+</div>
         <div className={`relative bg-white shadow-md rounded-3xl p-6 ${isAnimating ? "animate-zoomIn" : ""}`}>
      
             <div
@@ -944,10 +967,10 @@ const YoutubeLink = () => {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                    1
+                    2
                   )}`}
                 >
-                  2
+                  3
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -1056,11 +1079,13 @@ const YoutubeLink = () => {
       </div>
       <div className="p-4 rounded-lg overflow-auto text-sm">
         {coverImage && (
-          <img
-            src={coverImage}
-            alt="Cover"
-            className="h-48 w-full object-cover rounded-lg mb-4"
-          />
+         <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+         <img
+           src={coverImage}
+           alt="Cover"
+           className="w-full object-cover rounded-lg"
+         />
+       </div>
         )}
         {isEditing ? (
           <ReactQuill

@@ -63,8 +63,8 @@ const UploadFile = () => {
   const [files, setFiles] = useState([]);
   const [isLiveRecordOpen, setIsLiveRecordOpen] = useState(true);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(true);
-  const [isCoverUploadOpen, setIsCoverUploadOpen] = useState(true);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [isCoverUploadOpen, setIsCoverUploadOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [time, setTime] = useState(0);
@@ -84,7 +84,7 @@ const UploadFile = () => {
   const [currentTitle, setCurrentTitle] = useState("");
   const [generatedPost, setGeneratedPost] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
-
+  const [coverImageName, setCoverImageName] = useState("");
   const intervalRef = useRef(null);
   const inputRef = useRef(null);
   const profilePictureInputRef = useRef(null);
@@ -171,17 +171,19 @@ const UploadFile = () => {
     if (file) {
       const validImageTypes = ["image/jpeg", "image/png"];
       if (validImageTypes.includes(file.type)) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setCoverImage(reader.result);
-          markStepAsCompleted(2); // Mark Step 3 as completed
-          setIsCoverUploadOpen(false); // Close the section
-        };
-        reader.readAsDataURL(file);
+        setCoverImageName(file.name);
+        setCoverImage(URL.createObjectURL(file));
       } else {
         console.error("Invalid file type. Please select a JPG or PNG image.");
       }
     }
+    markStepAsCompleted(1);
+    setIsCoverUploadOpen(!isCoverUploadOpen);
+    setIsGenerateOpen(!isGenerateOpen);
+  };
+  const handleRemoveCoverImage = () => {
+    setCoverImage(null);
+    setCoverImageName("");
   };
 
   const handleEditToggle = () => {
@@ -417,6 +419,7 @@ const UploadFile = () => {
       }
     }
     setIsLiveRecordOpen(!isLiveRecordOpen);
+    setIsCoverUploadOpen(!isCoverUploadOpen)
   };
   
 
@@ -636,7 +639,7 @@ const UploadFile = () => {
 
        // Trigger scroll after setting generated post
        scrollToGeneratedPost();
-       markStepAsCompleted(1);
+       markStepAsCompleted(2);
       const updatedStatus = [...generatedStatus];
       updatedStatus[index] = true;
       setGeneratedStatus(updatedStatus);
@@ -1049,7 +1052,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
   </div>
        
   
-        {/* <div className="flex items-start">
+        <div className="flex items-start">
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
             <div
               className={`flex items-center justify-between mb-4 cursor-pointer ${
@@ -1060,12 +1063,12 @@ toast.success("Copied! The content has been copied to clipboard.", {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                    2
+                    1
                   )}`}
                 >
-                  3
+                  2
                 </span>
-                <p className="font-bold text-lg">Upload Cover (Optional)</p>
+                <p className="font-bold text-lg">Upload Image (Optional)</p>
               </div>
               <FontAwesomeIcon
                 icon={isCoverUploadOpen ? faAngleUp : faAngleDown}
@@ -1096,7 +1099,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
                   </div>
                 ) : (
                   <div
-                    className="h-48 w-full border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center"
+                    className="h-48 w-full border-dashed border-2 cursor-pointer border-gray-300 rounded-lg flex items-center justify-center"
                     onClick={() =>
                       coverImageInputRef.current && coverImageInputRef.current.click()
                     }
@@ -1104,10 +1107,16 @@ toast.success("Copied! The content has been copied to clipboard.", {
                     <p className="text-gray-500">Drag & Drop file here</p>
                   </div>
                 )}
+                 {coverImageName && (
+          <span className="mt-2 text-sm text-gray-600">
+            {coverImageName}
+          </span>
+        )}
               </div>
             )}
           </div>
-        </div> */}
+        </div>
+
   
   <div className={`flex items-start ${isAnimating ? "animate-zoomIn" : ""}`}>
           <div className="relative bg-white shadow-md rounded-3xl p-6 overflow-hidden w-full">
@@ -1120,10 +1129,10 @@ toast.success("Copied! The content has been copied to clipboard.", {
               <div className="flex items-center space-x-2">
                 <span
                   className={`h-10 w-10 lg:h-8 lg:w-8 flex items-center justify-center text-base rounded-full ${getStepClassName(
-                   1
+                   2
                   )}`}
                 >
-                  2
+                  3
                 </span>
                 <p className="font-bold text-lg">Generate</p>
               </div>
@@ -1191,13 +1200,7 @@ toast.success("Copied! The content has been copied to clipboard.", {
                 className="relative bg-white shadow-md rounded-3xl p-6 mb-6 overflow-hidden w-full max-w-5xl"
                 id={generatedPost.title} ref={generatedPostRef}
               >
-                {coverImage && (
-                  <img
-                    src={coverImage}
-                    alt="Cover"
-                    className="w-full h-64 object-cover rounded-lg mb-4"
-                  />
-                )}
+            
                 <div className="flex items-center justify-between mb-4">
                   <p className="font-bold text-lg">
                     Generated {generatedPost.title}{" "}
@@ -1260,16 +1263,40 @@ toast.success("Copied! The content has been copied to clipboard.", {
                />
                
                   ) : generatedPost.isHtmlContent ? (
-                    <div
-                      className="prose max-w-none"
-                      dangerouslySetInnerHTML={{
-                        __html: generatedPost.content,
-                      }}
-                    />
+                    <>
+                      {coverImage && (
+                   <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                   <img
+                     src={coverImage}
+                     alt="Cover"
+                     className="w-full object-cover rounded-lg"
+                   />
+                 </div>
+                 
+                     
+                      )}
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: generatedPost.content,
+                        }}
+                      />
+                    </>
                   ) : (
+                    <>
+                    {coverImage && (
+                       <div className="h-48 w-full mb-4 overflow-y-auto scrollbar-custom">
+                       <img
+                         src={coverImage}
+                         alt="Cover"
+                         className="w-full object-cover rounded-lg"
+                       />
+                     </div>
+                    )}
                     <div className="whitespace-pre-wrap">
                       {stripHtmlTags(generatedPost.content)}
                     </div>
+                  </>
                   )}
                  
                 </div>
