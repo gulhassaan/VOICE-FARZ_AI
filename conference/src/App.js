@@ -16,6 +16,7 @@ import Setting from './components/Data/UserProfile.jsx';
 import PricingTable from './components/Expo/Pricing.jsx';
 import Contact from './components/Expo/Contact.jsx';
 import Test from './components/test.jsx';
+import SpeechText from './components/Speech-to-text.jsx';
 import SharedHistoryWrapper from './components/History/SharedHistoryWrapper.jsx'; // Import the wrapper component
 import './index.css';
 import { toast, ToastContainer } from 'react-toastify';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/pricing" component={PricingTable} />
             <Route path="/contact" component={Contact} />
             <Route path="/test" component={Test} />
+            <Route path="/speech" component={SpeechText} />
             
             {/**Routing that take Sidebar with itself  Start */}
             <Route path="/dashboard">
