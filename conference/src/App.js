@@ -8,7 +8,7 @@ import History from './components/Content/History.jsx';
 import Layout from './components/Layout/Layout.jsx';
 import Login from './components/Private/Login.jsx';
 import NewPassword from './components/Secure/NewPassword.jsx';
-import LiveRecord from './components/Screen/RecordScreen.jsx';
+import LiveRecord from './components/Screen/RecordStream.jsx';
 import UploadFile from './components/Screen/UploadFile.jsx';
 import YouTubeLink from './components/Screen/YoutubeLink.jsx';
 import HistoryDetails from './components/History/HistoryDetails.jsx';
